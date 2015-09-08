@@ -227,13 +227,14 @@ describe('Bitcoin-core', function () {
     })
   })
 
-  describe('ECSignature.parseScriptSignature', function () {
+  describe('signature.decode', function () {
     sig_canonical.forEach(function (hex) {
       var buffer = new Buffer(hex, 'hex')
 
       it('can parse ' + hex, function () {
-        var parsed = bitcoin.ECSignature.parseScriptSignature(buffer)
-        var actual = parsed.signature.toScriptSignature(parsed.hashType)
+        var parsed = bitcoin.signature.decode(buffer)
+        var actual = bitcoin.signature.encode(parsed.signature, parsed.hashType)
+
         assert.strictEqual(actual.toString('hex'), hex)
       })
     })
@@ -247,7 +248,7 @@ describe('Bitcoin-core', function () {
 
       it('throws on ' + description, function () {
         assert.throws(function () {
-          bitcoin.ECSignature.parseScriptSignature(buffer)
+          bitcoin.signature.decode(buffer)
         }, /Expected DER (integer|sequence)|(R|S) value (excessively padded|is negative)|(R|S|DER sequence) length is (zero|too short|too long|invalid)|Invalid hashType/)
       })
     })

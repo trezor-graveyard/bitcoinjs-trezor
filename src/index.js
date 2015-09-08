@@ -1,7 +1,6 @@
 module.exports = {
   Block: require('./block'),
   ECPair: require('./ecpair'),
-  ECSignature: require('./ecsignature'),
   HDNode: require('./hdnode'),
   Transaction: require('./transaction'),
   TransactionBuilder: require('./transaction_builder'),
@@ -11,5 +10,6 @@ module.exports = {
   crypto: require('./crypto'),
   networks: require('./networks'),
   opcodes: require('./opcodes'),
-  script: require('./script')
+  script: require('./script'),
+  scriptSignature: require('./script_signature')
 }

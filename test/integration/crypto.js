@@ -144,7 +144,7 @@ describe('bitcoinjs-lib (crypto)', function () {
             var prevOut = bitcoin.Transaction.fromHex(result.txHex)
             var prevOutScript = prevOut.outs[prevVout].script
 
-            var scriptSignature = bitcoin.ECSignature.parseScriptSignature(scriptChunks[0])
+            var scriptSignature = bitcoin.scriptSignature.decode(scriptChunks[0])
             var publicKey = bitcoin.ECPair.fromPublicKeyBuffer(scriptChunks[1])
 
             var m = transaction.hashForSignature(input.vout, prevOutScript, scriptSignature.hashType)

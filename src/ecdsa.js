@@ -3,13 +3,17 @@ var typeforce = require('typeforce')
 var types = require('./types')
 
 var BigInteger = require('bigi')
-var ECSignature = require('./ecsignature')
 
 var ZERO = new Buffer([0])
 var ONE = new Buffer([1])
 
 var ecurve = require('ecurve')
 var secp256k1 = ecurve.getCurveByName('secp256k1')
+
+var ECSignature_t = typeforce.compile({
+  r: types.BigInt,
+  s: types.BigInt
+})
 
 // https://tools.ietf.org/html/rfc6979#section-3.2
 function deterministicGenerateK (hash, x, checkSig) {
@@ -105,13 +109,16 @@ function sign (hash, d) {
     s = n.subtract(s)
   }
 
-  return new ECSignature(r, s)
+  return {
+    r: r,
+    s: s
+  }
 }
 
 function verify (hash, signature, Q) {
   typeforce(types.tuple(
     types.Hash256bit,
-    types.ECSignature,
+    ECSignature_t,
     types.ECPoint
   ), arguments)
 

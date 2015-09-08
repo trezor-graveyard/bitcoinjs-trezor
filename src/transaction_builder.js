@@ -1,12 +1,12 @@
 var baddress = require('./address')
 var bcrypto = require('./crypto')
 var bscript = require('./script')
+var bscriptSig = require('./script_signature')
 var bufferEquals = require('buffer-equals')
 var networks = require('./networks')
 var ops = require('./opcodes')
 
 var ECPair = require('./ecpair')
-var ECSignature = require('./ecsignature')
 var Transaction = require('./transaction')
 
 // re-orders signatures to match pubKeys, fills undefined otherwise
@@ -74,7 +74,7 @@ function extractInput (transaction, txIn, vin) {
 
   switch (scriptType) {
     case 'pubkeyhash':
-      parsed = ECSignature.parseScriptSignature(scriptSigChunks[0])
+      parsed = bscriptSig.decode(scriptSigChunks[0])
       hashType = parsed.hashType
       pubKeys = scriptSigChunks.slice(1)
       signatures = [parsed.signature]
@@ -83,7 +83,7 @@ function extractInput (transaction, txIn, vin) {
       break
 
     case 'pubkey':
-      parsed = ECSignature.parseScriptSignature(scriptSigChunks[0])
+      parsed = bscriptSig.decode(scriptSigChunks[0])
       hashType = parsed.hashType
       signatures = [parsed.signature]
 
@@ -97,7 +97,7 @@ function extractInput (transaction, txIn, vin) {
       signatures = scriptSigChunks.slice(1).map(function (chunk) {
         if (chunk === ops.OP_0) return undefined
 
-        var parsed = ECSignature.parseScriptSignature(chunk)
+        var parsed = bscriptSig.decode(chunk)
         hashType = parsed.hashType
 
         return parsed.signature
@@ -295,13 +295,13 @@ TransactionBuilder.prototype.__build = function (allowIncomplete) {
     if (input.signatures) {
       switch (scriptType) {
         case 'pubkeyhash':
-          var pkhSignature = input.signatures[0].toScriptSignature(input.hashType)
+          var pkhSignature = bscriptSig.encode(input.signatures[0], input.hashType)
           scriptSig = bscript.pubKeyHashInput(pkhSignature, input.pubKeys[0])
           break
 
         case 'multisig':
           var msSignatures = input.signatures.map(function (signature) {
-            return signature && signature.toScriptSignature(input.hashType)
+            return signature && bscriptSig.encode(signature, input.hashType)
           })
 
           // fill in blanks with OP_0
@@ -320,7 +320,7 @@ TransactionBuilder.prototype.__build = function (allowIncomplete) {
           break
 
         case 'pubkey':
-          var pkSignature = input.signatures[0].toScriptSignature(input.hashType)
+          var pkSignature = bscriptSig.encode(input.signatures[0], input.hashType)
           scriptSig = bscript.pubKeyInput(pkSignature)
           break
       }
