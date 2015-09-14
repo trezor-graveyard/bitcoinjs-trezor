@@ -11,7 +11,6 @@ var BigInteger = require('bigi')
 var ECPair = require('../src/ecpair')
 
 var fixtures = require('./fixtures/ecpair.json')
-var curve = ecdsa.__curve
 
 var NETWORKS = require('../src/networks')
 var NETWORKS_LIST = [] // Object.values(NETWORKS)
@@ -19,46 +18,48 @@ for (var networkName in NETWORKS) {
   NETWORKS_LIST.push(NETWORKS[networkName])
 }
 
+var ONE = new Buffer('0000000000000000000000000000000000000000000000000000000000000001', 'hex')
+
 describe('ECPair', function () {
   describe('constructor', function () {
     it('defaults to compressed', function () {
-      var keyPair = new ECPair(BigInteger.ONE)
+      var keyPair = new ECPair(ONE)
 
-      assert.strictEqual(keyPair.compressed, true)
+      assert.strictEqual(keyPair.__compressed, true)
     })
 
     it('supports the uncompressed option', function () {
-      var keyPair = new ECPair(BigInteger.ONE, null, {
+      var keyPair = new ECPair(ONE, null, {
         compressed: false
       })
 
-      assert.strictEqual(keyPair.compressed, false)
+      assert.strictEqual(keyPair.__compressed, false)
     })
 
     it('supports the network option', function () {
-      var keyPair = new ECPair(BigInteger.ONE, null, {
+      var keyPair = new ECPair(ONE, null, {
         compressed: false,
         network: NETWORKS.testnet
       })
 
-      assert.strictEqual(keyPair.network, NETWORKS.testnet)
+      assert.strictEqual(keyPair.getNetwork(), NETWORKS.testnet)
     })
 
     fixtures.valid.forEach(function (f) {
       it('calculates the public point for ' + f.WIF, function () {
-        var d = new BigInteger(f.d)
+        var d = new BigInteger(f.d).toBuffer(32)
         var keyPair = new ECPair(d, null, {
           compressed: f.compressed
         })
 
-        assert.strictEqual(keyPair.getPublicKeyBuffer().toString('hex'), f.Q)
+        assert.strictEqual(keyPair.getPublic().toString('hex'), f.Q)
       })
     })
 
     fixtures.invalid.constructor.forEach(function (f) {
       it('throws ' + f.exception, function () {
-        var d = f.d && new BigInteger(f.d)
-        var Q = f.Q && ecurve.Point.decodeFrom(curve, new Buffer(f.Q, 'hex'))
+        var d = f.d && new BigInteger(f.d).toBuffer(32)
+        var Q = f.Q && new Buffer(f.Q, 'hex')
 
         assert.throws(function () {
           new ECPair(d, Q, f.options)
@@ -67,7 +68,7 @@ describe('ECPair', function () {
     })
   })
 
-  describe('getPublicKeyBuffer', function () {
+  describe('getPublic', function () {
     var keyPair
 
     beforeEach(function () {
@@ -78,7 +79,7 @@ describe('ECPair', function () {
       this.mock(keyPair.Q).expects('getEncoded')
         .once().withArgs(keyPair.compressed)
 
-      keyPair.getPublicKeyBuffer()
+      keyPair.getPublic()
     }))
   })
 

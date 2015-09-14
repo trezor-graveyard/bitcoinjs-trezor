@@ -68,19 +68,15 @@
   "invalid": {
     "constructor": [
       {
-        "exception": "Private key must be greater than 0",
-        "d": "-1"
-      },
-      {
-        "exception": "Private key must be greater than 0",
+        "exception": "Private key must be within the interval \\[1, n - 1\\]",
         "d": "0"
       },
       {
-        "exception": "Private key must be less than the curve order",
+        "exception": "Private key must be within the interval \\[1, n - 1\\]",
         "d": "115792089237316195423570985008687907852837564279074904382605163141518161494337"
       },
       {
-        "exception": "Private key must be less than the curve order",
+        "exception": "Private key must be within the interval \\[1, n - 1\\]",
         "d": "115792089237316195423570985008687907853269984665640564039457584007913129639935"
       },
       {
@@ -91,7 +87,7 @@
         }
       },
       {
-        "exception": "Unexpected publicKey parameter",
+        "exception": "Unexpected public key parameter",
         "d": "1",
         "Q": "0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798"
       },

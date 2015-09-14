@@ -59,7 +59,7 @@ describe('bitcoinjs-lib (crypto)', function () {
 
       var curve = secp256k1
       var QP = master.keyPair.Q
-      var serQP = master.keyPair.getPublicKeyBuffer()
+      var serQP = master.keyPair.getPublicKey()
 
       var d1 = child.keyPair.d
       var d2
@@ -145,7 +145,7 @@ describe('bitcoinjs-lib (crypto)', function () {
             var prevOutScript = prevOut.outs[prevVout].script
 
             var scriptSignature = bitcoin.ECSignature.parseScriptSignature(scriptChunks[0])
-            var publicKey = bitcoin.ECPair.fromPublicKeyBuffer(scriptChunks[1])
+            var publicKey = new bitcoin.ECPair(null, scriptChunks[1])
 
             var m = transaction.hashForSignature(input.vout, prevOutScript, scriptSignature.hashType)
             assert(publicKey.verify(m, scriptSignature.signature), 'Invalid m')

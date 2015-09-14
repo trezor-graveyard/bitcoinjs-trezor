@@ -1,20 +1,17 @@
 var base58check = require('bs58check')
 var bcrypto = require('./crypto')
 var createHmac = require('create-hmac')
+var secp256k1 = require('./ecdsa')
 var typeforce = require('typeforce')
 var types = require('./types')
-var NETWORKS = require('./networks')
 
-var BigInteger = require('bigi')
 var ECPair = require('./ecpair')
-
-var ecurve = require('ecurve')
-var curve = ecurve.getCurveByName('secp256k1')
+var NETWORKS = require('./networks')
 
 function HDNode (keyPair, chainCode) {
   typeforce(types.tuple('ECPair', types.Buffer256bit), arguments)
 
-  if (!keyPair.compressed) throw new TypeError('BIP32 only allows compressed keyPairs')
+  if (!keyPair.__compressed) throw new TypeError('BIP32 only allows compressed keyPairs')
 
   this.keyPair = keyPair
   this.chainCode = chainCode
@@ -37,10 +34,9 @@ HDNode.fromSeedBuffer = function (seed, network) {
   var IL = I.slice(0, 32)
   var IR = I.slice(32)
 
-  // In case IL is 0 or >= n, the master key is invalid
-  // This is handled by the ECPair constructor
-  var pIL = BigInteger.fromBuffer(IL)
-  var keyPair = new ECPair(pIL, null, {
+  // if IL is <= 0 or >= n, the master key is invalid
+  // checked by the ECPair constructor
+  var keyPair = new ECPair(IL, null, {
     network: network
   })
 
@@ -94,25 +90,24 @@ HDNode.fromBase58 = function (string, networks) {
 
   // 33 bytes: private key data (0x00 + k)
   if (version === network.bip32.private) {
-    if (buffer.readUInt8(45) !== 0x00) throw new Error('Invalid private key')
+    if (buffer[45] !== 0x00) throw new Error('Invalid private key')
 
-    var d = BigInteger.fromBuffer(buffer.slice(46, 78))
-
+    var d = buffer.slice(46, 78)
     keyPair = new ECPair(d, null, {
+      compressed: true,
       network: network
     })
 
   // 33 bytes: public key data (0x02 + X or 0x03 + X)
   } else {
-    var Q = ecurve.Point.decodeFrom(curve, buffer.slice(45, 78))
-    if (!Q.compressed) throw new Error('Invalid public key')
-
-    // Verify that the X coordinate in the public point corresponds to a point on the curve.
-    // If not, the extended public key is invalid.
-    curve.validate(Q)
+    var Q = buffer.slice(45, 78)
 
     keyPair = new ECPair(null, Q, {
-      network: network
+      compressed: true,
+      network: network,
+
+      // verify the public point corresponds to a point on the curve
+      validate: true
     })
   }
 
@@ -129,7 +124,7 @@ HDNode.prototype.getAddress = function () {
 }
 
 HDNode.prototype.getIdentifier = function () {
-  return bcrypto.hash160(this.keyPair.getPublicKeyBuffer())
+  return bcrypto.hash160(this.keyPair.getPublic())
 }
 
 HDNode.prototype.getFingerprint = function () {
@@ -193,12 +188,12 @@ HDNode.prototype.toBase58 = function (__isPrivate) {
   if (this.keyPair.d) {
     // 0x00 + k for private keys
     buffer.writeUInt8(0, 45)
-    this.keyPair.d.toBuffer(32).copy(buffer, 46)
+    this.keyPair.getPrivate().copy(buffer, 46)
 
   // 33 bytes: the public key
   } else {
     // X9.62 encoding for public keys
-    this.keyPair.getPublicKeyBuffer().copy(buffer, 45)
+    this.keyPair.getPublic().copy(buffer, 45)
   }
 
   return base58check.encode(buffer)
@@ -209,20 +204,20 @@ HDNode.prototype.derive = function (index) {
   var isHardened = index >= HDNode.HIGHEST_BIT
   var data = new Buffer(37)
 
-  // Hardened child
+  // hardened child
   if (isHardened) {
     if (!this.keyPair.d) throw new TypeError('Could not derive hardened child key')
 
     // data = 0x00 || ser256(kpar) || ser32(index)
     data[0] = 0x00
-    this.keyPair.d.toBuffer(32).copy(data, 1)
+    this.keyPair.getPrivate().copy(data, 1)
     data.writeUInt32BE(index, 33)
 
-  // Normal child
+  // normal child
   } else {
     // data = serP(point(kpar)) || ser32(index)
     //      = serP(Kpar) || ser32(index)
-    this.keyPair.getPublicKeyBuffer().copy(data, 0)
+    this.keyPair.getPublic().copy(data, 0)
     data.writeUInt32BE(index, 33)
   }
 
@@ -230,40 +225,40 @@ HDNode.prototype.derive = function (index) {
   var IL = I.slice(0, 32)
   var IR = I.slice(32)
 
-  var pIL = BigInteger.fromBuffer(IL)
-
-  // In case parse256(IL) >= n, proceed with the next value for i
-  if (pIL.compareTo(curve.n) >= 0) {
+  // proceed for the next value of i if IL isn't within the interval
+  if (!secp256k1.intCheck(IL)) {
     return this.derive(index + 1)
   }
 
-  // Private parent key -> private child key
+  // private parent key -> private child key
   var derivedKeyPair
   if (this.keyPair.d) {
     // ki = parse256(IL) + kpar (mod n)
-    var ki = pIL.add(this.keyPair.d).mod(curve.n)
+    var ki = secp256k1.intAdd(IL, this.keyPair.getPrivate())
 
-    // In case ki == 0, proceed with the next value for i
-    if (ki.signum() === 0) {
+    // in case ki == 0, proceed with the next value for i
+    if (secp256k1.intSign(ki) === 0) {
       return this.derive(index + 1)
     }
 
     derivedKeyPair = new ECPair(ki, null, {
+      compressed: true,
       network: this.keyPair.network
     })
 
-  // Public parent key -> public child key
+  // public parent key -> public child key
   } else {
-    // Ki = point(parse256(IL)) + Kpar
-    //    = G*IL + Kpar
-    var Ki = curve.G.multiply(pIL).add(this.keyPair.Q)
+    // Ki = Kpar + point(parse256(IL))
+    //    = Kpar + G*IL
+    var Ki = secp256k1.pointAdd(this.keyPair.getPublic(), secp256k1.pointDerive(IL))
 
-    // In case Ki is the point at infinity, proceed with the next value for i
-    if (curve.isInfinity(Ki)) {
+    // in case Ki is the point at infinity, proceed with the next value for i
+    if (Ki === null) {
       return this.derive(index + 1)
     }
 
     derivedKeyPair = new ECPair(null, Ki, {
+      compressed: true,
       network: this.keyPair.network
     })
   }
@@ -280,7 +275,5 @@ HDNode.prototype.deriveHardened = function (index) {
   // Only derives hardened private keys by default
   return this.derive(index + HDNode.HIGHEST_BIT)
 }
-
-HDNode.prototype.toString = HDNode.prototype.toBase58
 
 module.exports = HDNode

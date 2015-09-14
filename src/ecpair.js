@@ -1,60 +1,56 @@
+var baddress = require('./address')
 var bcrypto = require('./crypto')
 var bs58check = require('bs58check')
-var ecdsa = require('./ecdsa')
 var randomBytes = require('randombytes')
+var secp256k1 = require('./ecdsa')
 var typeforce = require('typeforce')
 var types = require('./types')
 var wif = require('wif')
 
 var NETWORKS = require('./networks')
-var BigInteger = require('bigi')
-
-var ecurve = require('ecurve')
-var secp256k1 = ecdsa.__curve
 
 function ECPair (d, Q, options) {
   if (options) {
     typeforce({
       compressed: types.maybe(types.Boolean),
-      network: types.maybe(types.Network)
+      network: types.maybe(types.Network),
+      validate: types.maybe(types.Boolean)
     }, options)
+  } else {
+    options = {}
   }
 
-  options = options || {}
+  options.network = options.network || NETWORKS.bitcoin
 
   if (d) {
-    if (d.signum() <= 0) throw new Error('Private key must be greater than 0')
-    if (d.compareTo(secp256k1.n) >= 0) throw new Error('Private key must be less than the curve order')
-    if (Q) throw new TypeError('Unexpected publicKey parameter')
+    typeforce(types.Buffer256bit, d)
 
-    this.d = d
-  } else {
-    typeforce(types.ECPoint, Q)
+    if (Q) throw new TypeError('Unexpected public key parameter')
+    if (!secp256k1.intCheck(d)) throw new TypeError('Private key must be within the interval [1, n - 1]')
 
-    this.__Q = Q
-  }
+    this.__d = d
+    this.__compressed = options.compressed === undefined ? true : options.compressed
+  } else if (Q) {
+    typeforce(types.Buffer, Q)
 
-  this.compressed = options.compressed === undefined ? true : options.compressed
-  this.network = options.network || NETWORKS.bitcoin
-}
-
-Object.defineProperty(ECPair.prototype, 'Q', {
-  get: function () {
-    if (!this.__Q && this.d) {
-      this.__Q = secp256k1.G.multiply(this.d)
+    if (options.validate) {
+      secp256k1.pointVerify(Q)
     }
 
-    return this.__Q
+    if (options.compressed && Q.length !== 65) {
+      throw new TypeError('Expected compressed public key')
+    } else if (Q.length !== 33) {
+      throw new TypeError('Expected uncompressed public key')
+    }
+
+    this.__Q = Q
+
+    // TODO: remove
+    this.__compressed = (Q.length === 33)
   }
-})
 
-ECPair.fromPublicKeyBuffer = function (buffer, network) {
-  var Q = ecurve.Point.decodeFrom(secp256k1, buffer)
-
-  return new ECPair(null, Q, {
-    compressed: Q.compressed,
-    network: network
-  })
+  typeforce(types.Network, options.network)
+  this.__network = options.network
 }
 
 ECPair.fromWIF = function (string, network) {
@@ -69,10 +65,9 @@ ECPair.fromWIF = function (string, network) {
     }).pop() || {}
   }
 
-  var decoded = wif.decodeRaw(network.wif, buffer)
-  var d = BigInteger.fromBuffer(decoded.d)
+  var decoded = wif.decode(network.wif, string)
 
-  return new ECPair(d, null, {
+  return new ECPair(decoded.d, null, {
     compressed: decoded.compressed,
     network: network
   })
@@ -82,51 +77,52 @@ ECPair.makeRandom = function (options) {
   options = options || {}
 
   var rng = options.rng || randomBytes
-
   var d
   do {
-    var buffer = rng(32)
-    typeforce(types.Buffer256bit, buffer)
-
-    d = BigInteger.fromBuffer(buffer)
-  } while (d.signum() <= 0 || d.compareTo(secp256k1.n) >= 0)
+    d = rng(32)
+    typeforce(types.Buffer256bit, d)
+  } while (!secp256k1.intCheck(d))
 
   return new ECPair(d, null, options)
 }
 
 ECPair.prototype.getAddress = function () {
-  var pubKey = this.getPublicKeyBuffer()
-  var pubKeyHash = bcrypto.hash160(pubKey)
-
-  var payload = new Buffer(21)
-  payload.writeUInt8(this.network.pubKeyHash, 0)
-  pubKeyHash.copy(payload, 1)
-
-  return bs58check.encode(payload)
+  return baddress.toBase58Check(bcrypto.hash160(this.getPublic()), this.getNetwork().pubKeyHash)
 }
 
 ECPair.prototype.getNetwork = function () {
-  return this.network
+  return this.__network
 }
 
-ECPair.prototype.getPublicKeyBuffer = function () {
-  return this.Q.getEncoded(this.compressed)
+ECPair.prototype.getPrivate = function () {
+  if (!this.__d) throw new Error('Missing private key')
+  return this.__d
+}
+
+ECPair.prototype.getPublic = function () {
+  if (!this.__Q) {
+    this.__Q = secp256k1.pointDerive(this.getPrivate(), this.isCompressed())
+  }
+
+  return this.__Q
+}
+
+ECPair.prototype.isCompressed = function () {
+  return this.__compressed
+//   return this.getPublic().length === 33
 }
 
 ECPair.prototype.sign = function (hash) {
-  if (!this.d) throw new Error('Missing private key')
-
-  return ecdsa.sign(hash, this.d)
+  return secp256k1.sign(hash, this.getPrivate())
 }
 
 ECPair.prototype.toWIF = function () {
-  if (!this.d) throw new Error('Missing private key')
-
-  return wif.encode(this.network.wif, this.d.toBuffer(32), this.compressed)
+  if (!this.__d) throw new Error('Missing private key')
+  return wif.encode(this.getNetwork().wif, this.getPrivate(), this.isCompressed())
 }
 
 ECPair.prototype.verify = function (hash, signature) {
-  return ecdsa.verify(hash, signature, this.Q)
+  return secp256k1.verify(hash, signature, this.getPublic())
 }
 
 module.exports = ECPair
