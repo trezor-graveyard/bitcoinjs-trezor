@@ -10,7 +10,7 @@ var ONE = new Buffer([1])
 var ecurve = require('ecurve')
 var secp256k1 = ecurve.getCurveByName('secp256k1')
 
-var ECSignature_t = typeforce.compile({
+var ECSignatureType = typeforce.compile({
   r: types.BigInt,
   s: types.BigInt
 })
@@ -118,7 +118,7 @@ function sign (hash, d) {
 function verify (hash, signature, Q) {
   typeforce(types.tuple(
     types.Hash256bit,
-    ECSignature_t,
+    ECSignatureType,
     types.ECPoint
   ), arguments)
 
