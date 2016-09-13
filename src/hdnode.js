@@ -51,7 +51,7 @@ HDNode.fromSeedHex = function (hex, network) {
   return HDNode.fromSeedBuffer(new Buffer(hex, 'hex'), network)
 }
 
-HDNode.fromBase58 = function (string, networks) {
+HDNode.fromBase58 = function (string, networks, skipValidation) {
   var buffer = base58check.decode(string)
   if (buffer.length !== 78) throw new Error('Invalid buffer length')
 
@@ -106,9 +106,12 @@ HDNode.fromBase58 = function (string, networks) {
     var Q = ecurve.Point.decodeFrom(curve, buffer.slice(45, 78))
     // Q.compressed is assumed, if somehow this assumption is broken, `new HDNode` will throw
 
-    // Verify that the X coordinate in the public point corresponds to a point on the curve.
-    // If not, the extended public key is invalid.
-    curve.validate(Q)
+    // Skip validation if requested for efficiency
+    if (!skipValidation) {
+      // Verify that the X coordinate in the public point corresponds to a point on the curve.
+      // If not, the extended public key is invalid.
+      curve.validate(Q)
+    }
 
     keyPair = new ECPair(null, Q, { network: network })
   }
