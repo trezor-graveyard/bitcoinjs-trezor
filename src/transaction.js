@@ -290,6 +290,8 @@ Transaction.prototype.joinsplitByteLength = function () {
   if (this.joinsplits == null) {
     return 0
   }
+
+  var pubkeySigLength = (this.joinsplits.length > 0) ? (32 + 64) : 0;
   return (
     bufferutils.varIntSize(this.joinsplits.length) +
     this.joinsplits.reduce(function (sum, joinsplit) {
@@ -303,7 +305,8 @@ Transaction.prototype.joinsplitByteLength = function () {
         65 + 33 * 7 +
         joinsplit.ciphertexts.length * Transaction.ZCASH_NOTECIPHERTEXT_SIZE
       )
-    }, 0)
+    }, 0) +
+    pubkeySigLength
   )
 }
 
