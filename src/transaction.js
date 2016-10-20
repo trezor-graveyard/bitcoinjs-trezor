@@ -287,7 +287,7 @@ function scriptSize (someScript) {
 }
 
 Transaction.prototype.joinsplitByteLength = function () {
-  if (this.joinsplits == null) {
+  if (this.version < 2) {
     return 0
   }
 
