@@ -141,7 +141,7 @@ Transaction.fromBuffer = function (buffer, __noStrict) {
         gH: readCompressedG1()
       }
       var ciphertexts = []
-      for (i = 0; i < Transaction.ZCASH_NUM_JS_OUTPUTS; i++) {
+      for (j = 0; j < Transaction.ZCASH_NUM_JS_OUTPUTS; j++) {
         ciphertexts.push(readSlice(Transaction.ZCASH_NOTECIPHERTEXT_SIZE))
       }
 
