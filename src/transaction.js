@@ -163,7 +163,7 @@ Transaction.fromBuffer = function (buffer, __noStrict) {
 
   tx.locktime = readUInt32()
 
-  if (tx.version >= 2) {
+  if (tx.version >= 2 && offset !== buffer.length) {
     var jsLen = readVarInt()
     for (i = 0; i < jsLen; ++i) {
       var vpubOld = readUInt64()
