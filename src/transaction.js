@@ -52,7 +52,7 @@ Transaction.ZCASH_NOTECIPHERTEXT_SIZE = 1 + 8 + 32 + 32 + 512 + 16
 Transaction.ZCASH_G1_PREFIX_MASK = 0x02
 Transaction.ZCASH_G2_PREFIX_MASK = 0x0a
 
-Transaction.fromBuffer = function (buffer, __noStrict) {
+Transaction.fromBuffer = function (buffer, zcash) {
   var offset = 0
   function readSlice (n) {
     offset += n
@@ -161,7 +161,7 @@ Transaction.fromBuffer = function (buffer, __noStrict) {
 
   tx.locktime = readUInt32()
 
-  if (tx.version >= 2 && offset !== buffer.length) {
+  if (tx.version >= 2 && zcash) {
     var jsLen = readVarInt()
     for (i = 0; i < jsLen; ++i) {
       var vpubOld = readUInt64()
@@ -216,14 +216,15 @@ Transaction.fromBuffer = function (buffer, __noStrict) {
     }
   }
 
-  if (__noStrict) return tx
+  tx.zcash = zcash
+
   if (offset !== buffer.length) throw new Error('Transaction has unexpected data')
 
   return tx
 }
 
-Transaction.fromHex = function (hex) {
-  return Transaction.fromBuffer(Buffer.from(hex, 'hex'))
+Transaction.fromHex = function (hex, zcash) {
+  return Transaction.fromBuffer(new Buffer(hex, 'hex'), zcash)
 }
 
 Transaction.isCoinbaseHash = function (buffer) {
@@ -288,6 +289,10 @@ function scriptSize (someScript) {
 
 Transaction.prototype.joinsplitByteLength = function () {
   if (this.version < 2) {
+    return 0
+  }
+
+  if (!this.zcash) {
     return 0
   }
 
@@ -578,7 +583,7 @@ Transaction.prototype.__toBuffer = function (buffer, initialOffset, __allowWitne
 
   writeUInt32(this.locktime)
 
-  if (this.version >= 2) {
+  if (this.version >= 2 && this.zcash) {
     writeVarInt(this.joinsplits.length)
     this.joinsplits.forEach(function (joinsplit) {
       writeUInt64(joinsplit.vpubOld)
