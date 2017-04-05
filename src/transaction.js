@@ -52,7 +52,7 @@ Transaction.ZCASH_NOTECIPHERTEXT_SIZE = 1 + 8 + 32 + 32 + 512 + 16
 Transaction.ZCASH_G1_PREFIX_MASK = 0x02
 Transaction.ZCASH_G2_PREFIX_MASK = 0x0a
 
-Transaction.fromBuffer = function (buffer, zcash) {
+Transaction.fromBuffer = function (buffer, zcash, __noStrict) {
   var offset = 0
   function readSlice (n) {
     offset += n
@@ -218,8 +218,9 @@ Transaction.fromBuffer = function (buffer, zcash) {
     }
   }
 
-  tx.zcash = zcash
+  tx.zcash = !!zcash
 
+  if (__noStrict) return tx
   if (offset !== buffer.length) throw new Error('Transaction has unexpected data')
 
   return tx
@@ -283,12 +284,6 @@ Transaction.prototype.byteLength = function () {
   return this.__byteLength(true)
 }
 
-function scriptSize (someScript) {
-  var length = someScript.length
-
-  return bufferutils.varIntSize(length) + length
-}
-
 Transaction.prototype.joinsplitByteLength = function () {
   if (this.version < 2) {
     return 0
@@ -298,7 +293,7 @@ Transaction.prototype.joinsplitByteLength = function () {
     return 0
   }
 
-  var pubkeySigLength = (this.joinsplits.length > 0) ? (32 + 64) : 0;
+  var pubkeySigLength = (this.joinsplits.length > 0) ? (32 + 64) : 0
   return (
     bufferutils.varIntSize(this.joinsplits.length) +
     this.joinsplits.reduce(function (sum, joinsplit) {
@@ -335,6 +330,7 @@ Transaction.prototype.clone = function () {
   var newTx = new Transaction()
   newTx.version = this.version
   newTx.locktime = this.locktime
+  newTx.zcash = this.zcash
 
   newTx.ins = this.ins.map(function (txIn) {
     return {
