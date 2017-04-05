@@ -4,6 +4,10 @@ You should not use this if you don't have to support zcash, since it's not as we
 
 Read README at original bitcoinjs-lib
 
+## versions
+
+Version 3.0.0 is rebased on master that will become 3.0.0 soon-ish.
+
 ## LICENSE [MIT](LICENSE)
 
 
