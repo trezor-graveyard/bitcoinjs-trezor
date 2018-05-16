@@ -121,7 +121,20 @@ Transaction.fromBuffer = function (buffer, zcash, __noStrict) {
   }
 
   var tx = new Transaction()
-  tx.version = readInt32()
+
+  if (zcash) {
+      var header = readUInt32()
+      tx.version = header & 0x7ffffff
+      var overwintered = header >>> 31
+      if (tx.version >= 3) {
+          if (!overwintered) {
+              throw new Error("zcash tx v3+ not overwintered")
+          }
+          tx.versionGroupId = readUInt32()
+      }
+  } else {
+      tx.version = readInt32()
+  }
 
   var marker = buffer.readUInt8(offset)
   var flag = buffer.readUInt8(offset + 1)
@@ -164,6 +177,10 @@ Transaction.fromBuffer = function (buffer, zcash, __noStrict) {
   }
 
   tx.locktime = readUInt32()
+
+  if (tx.version >= 3 && zcash) {
+      tx.expiry = readUInt32()
+  }
 
   if (tx.version >= 2 && zcash) {
     var jsLen = readVarInt()
