@@ -351,7 +351,9 @@ Transaction.prototype.__byteLength = function (__allowWitness) {
     this.ins.reduce(function (sum, input) { return sum + 40 + varSliceSize(input.script) }, 0) +
     this.outs.reduce(function (sum, output) { return sum + 8 + varSliceSize(output.script) }, 0) +
     (hasWitnesses ? this.ins.reduce(function (sum, input) { return sum + vectorSize(input.witness) }, 0) : 0) +
-    this.joinsplitByteLength()
+    this.joinsplitByteLength() +
+    (this.versionGroupId == null ? 0 : 4) +
+    (this.expiry == null ? 0 : 4)
   )
 }
 
@@ -579,7 +581,12 @@ Transaction.prototype.__toBuffer = function (buffer, initialOffset, __allowWitne
     writeSlice(i.x)
   }
 
-  writeInt32(this.version)
+  if (this.versionGroupId != null) {
+    writeInt32(this.version | (1 << 31));
+    writeInt32(this.versionGroupId)
+  } else {
+    writeInt32(this.version)
+  }
 
   var hasWitnesses = __allowWitness && this.hasWitnesses()
 
@@ -615,6 +622,10 @@ Transaction.prototype.__toBuffer = function (buffer, initialOffset, __allowWitne
   }
 
   writeUInt32(this.locktime)
+
+  if (this.expiry != null) {
+    writeUInt32(this.expiry)
+  }
 
   if (this.version >= 2 && this.zcash) {
     writeVarInt(this.joinsplits.length)
