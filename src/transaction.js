@@ -580,10 +580,10 @@ Transaction.prototype.__toBuffer = function (buffer, initialOffset, __allowWitne
     writeUInt8(Transaction.ZCASH_G2_PREFIX_MASK | i.yLsb)
     writeSlice(i.x)
   }
-
+  
   if (this.versionGroupId != null) {
     writeInt32(this.version | (1 << 31));
-    writeInt32(this.versionGroupId)
+    writeUInt32(this.versionGroupId)
   } else {
     writeInt32(this.version)
   }
