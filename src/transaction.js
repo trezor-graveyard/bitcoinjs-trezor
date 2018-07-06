@@ -369,7 +369,10 @@ Transaction.prototype.clone = function () {
   newTx.version = this.version
   newTx.locktime = this.locktime
   newTx.zcash = this.zcash
-
+  if (newTx.zcash) {
+    newTx.versionGroupId = this.versionGroupId
+    newTx.expiry = this.expiry
+  }
   newTx.ins = this.ins.map(function (txIn) {
     return {
       hash: txIn.hash,
