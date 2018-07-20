@@ -86,9 +86,9 @@ Transaction.fromBuffer = function (buffer, zcash, __noStrict) {
     return i
   }
 
-  function readUInt64 () {
-    var i = bufferutils.readUInt64LE(buffer, offset)
-    offset += 8
+  function readUInt64asString () {
+    var i = bufferutils.readUInt64LEasString(buffer, offset)
+    offset += 8 
     return i
   }
 
@@ -169,7 +169,7 @@ Transaction.fromBuffer = function (buffer, zcash, __noStrict) {
   var voutLen = readVarInt()
   for (i = 0; i < voutLen; ++i) {
     tx.outs.push({
-      value: readUInt64(),
+      value: readUInt64asString(),
       script: readVarSlice()
     })
   }
