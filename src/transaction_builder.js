@@ -473,6 +473,25 @@ function TransactionBuilder (network, maximumFeeRate) {
 
   this.inputs = []
   this.tx = new Transaction()
+
+  if (this.network.txversion !== undefined) {
+    this.setVersion(this.network.txversion)
+  }
+  if (this.network.versionGroupId !== undefined) {
+    this.setVersionGroupId(this.network.versionGroupId)
+  }
+}
+
+TransactionBuilder.prototype.setExpiry = function (expiry) {
+  typeforce(types.UInt32, expiry)
+
+  this.tx.expiry = expiry
+}
+
+TransactionBuilder.prototype.setVersionGroupId = function (versiongroupid) {
+  typeforce(types.UInt32, versiongroupid)
+
+  this.tx.versiongroupid = versiongroupid
 }
 
 TransactionBuilder.prototype.setLockTime = function (locktime) {
@@ -501,8 +520,13 @@ TransactionBuilder.fromTransaction = function (transaction, network) {
   var txb = new TransactionBuilder(network)
 
   // Copy transaction fields
+  var version = transaction.version & 0x7fffffff
   txb.setVersion(transaction.version)
   txb.setLockTime(transaction.locktime)
+  if (version >= 3) {
+    txb.setVersionGroupId(transaction.versiongroupid)
+    txb.setExpiry(transaction.expiry)
+  }
 
   // Copy outputs (done first to avoid signature invalidation)
   transaction.outs.forEach(function (txOut) {
@@ -666,7 +690,7 @@ function canSign (input) {
     )
 }
 
-TransactionBuilder.prototype.sign = function (vin, keyPair, redeemScript, hashType, witnessValue, witnessScript) {
+TransactionBuilder.prototype.sign = function (vin, keyPair, redeemScript, hashType, witnessValue, witnessScript, overwintered) {
   // TODO: remove keyPair.network matching in 4.0.0
   if (keyPair.network && keyPair.network !== this.network) throw new TypeError('Inconsistent network')
   if (!this.inputs[vin]) throw new Error('No input at index: ' + vin)
@@ -697,6 +721,8 @@ TransactionBuilder.prototype.sign = function (vin, keyPair, redeemScript, hashTy
   var signatureHash
   if (input.witness) {
     signatureHash = this.tx.hashForWitnessV0(vin, input.signScript, input.value, hashType)
+  } else if (overwintered) {
+    signatureHash = this.tx.hashForZIP143(vin, input.signScript, witnessValue, hashType)
   } else {
     signatureHash = this.tx.hashForSignature(vin, input.signScript, hashType)
   }
