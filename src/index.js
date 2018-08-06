@@ -13,7 +13,6 @@ module.exports = {
   ECSignature: require('./ecsignature'),
   HDNode: require('./hdnode'),
   Transaction: require('./transaction'),
-  TransactionBuilder: require('./transaction_builder'),
 
   address: require('./address'),
   crypto: require('./crypto'),
