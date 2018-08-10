@@ -20,35 +20,7 @@ var types = {
   WITNESS_COMMITMENT: 'witnesscommitment'
 }
 
-function classifyOutput (script) {
-  if (witnessPubKeyHash.output.check(script)) return types.P2WPKH
-  if (witnessScriptHash.output.check(script)) return types.P2WSH
-  if (pubKeyHash.output.check(script)) return types.P2PKH
-  if (scriptHash.output.check(script)) return types.P2SH
-
-  // XXX: optimization, below functions .decompile before use
-  var chunks = decompile(script)
-  if (multisig.output.check(chunks)) return types.MULTISIG
-  if (pubKey.output.check(chunks)) return types.P2PK
-  if (witnessCommitment.output.check(chunks)) return types.WITNESS_COMMITMENT
-  if (nullData.output.check(chunks)) return types.NULLDATA
-
-  return types.NONSTANDARD
-}
-
-function classifyWitness (script, allowIncomplete) {
-  // XXX: optimization, below functions .decompile before use
-  var chunks = decompile(script)
-
-  if (witnessPubKeyHash.input.check(chunks)) return types.P2WPKH
-  if (witnessScriptHash.input.check(chunks, allowIncomplete)) return types.P2WSH
-
-  return types.NONSTANDARD
-}
-
 module.exports = {
-  classifyOutput: classifyOutput,
-  classifyWitness: classifyWitness,
   multisig: multisig,
   nullData: nullData,
   pubKey: pubKey,

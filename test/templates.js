@@ -13,15 +13,16 @@ function toHex (x) { return x.toString('hex') }
 
 describe('script-templates', function () {
 
-  describe('classifyOutput', function () {
+  describe('checks nulldata correctly', function () {
     fixtures.valid.forEach(function (f) {
       if (!f.output) return
+      var isNulldata = f.type === 'nulldata'
 
-      it('classifies ' + f.output + ' as ' + f.type, function () {
+      it(f.output + ' is ' + (isNulldata ? '' : 'not ') + 'nulldata', function () {
         var output = bscript.fromASM(f.output)
-        var type = btemplates.classifyOutput(output)
+        var check = btemplates.nullData.output.check(output)
 
-        assert.strictEqual(type, f.type)
+        assert.strictEqual(check, isNulldata)
       })
     })
   })

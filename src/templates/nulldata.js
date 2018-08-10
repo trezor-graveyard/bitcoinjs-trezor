@@ -6,8 +6,9 @@ var typeforce = require('typeforce')
 var OPS = require('bitcoin-ops')
 
 function check (script) {
-  return script.length === 2 &&
-     script[0] === OPS.OP_RETURN
+  var chunks = bscript.decompile(script)
+  return chunks.length === 2 &&
+     chunks[0] === OPS.OP_RETURN
 }
 check.toJSON = function () { return 'null data output' }
 
