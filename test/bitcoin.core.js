@@ -150,42 +150,6 @@ describe('Bitcoin-core', function () {
     })
   })
 
-  // sighash
-  describe('Transaction', function () {
-    sigHash.forEach(function (f) {
-      // Objects that are only a single string are ignored
-      if (f.length === 1) return
-
-      var txHex = f[0]
-      var scriptHex = f[1]
-      var inIndex = f[2]
-      var hashType = f[3]
-      var expectedHash = f[4]
-
-      var hashTypes = []
-      if ((hashType & 0x1f) === bitcoin.Transaction.SIGHASH_NONE) hashTypes.push('SIGHASH_NONE')
-      else if ((hashType & 0x1f) === bitcoin.Transaction.SIGHASH_SINGLE) hashTypes.push('SIGHASH_SINGLE')
-      else hashTypes.push('SIGHASH_ALL')
-      if (hashType & bitcoin.Transaction.SIGHASH_ANYONECANPAY) hashTypes.push('SIGHASH_ANYONECANPAY')
-
-      var hashTypeName = hashTypes.join(' | ')
-
-      it('should hash ' + txHex.slice(0, 40) + '... (' + hashTypeName + ')', function () {
-        var transaction = bitcoin.Transaction.fromHex(txHex)
-        assert.strictEqual(transaction.toHex(), txHex)
-
-        var script = Buffer.from(scriptHex, 'hex')
-        var scriptChunks = bitcoin.script.decompile(script)
-        assert.strictEqual(bitcoin.script.compile(scriptChunks).toString('hex'), scriptHex)
-
-        var hash = transaction.hashForSignature(inIndex, script, hashType)
-
-        // reverse because test data is reversed
-        assert.equal(hash.reverse().toString('hex'), expectedHash)
-      })
-    })
-  })
-
   describe('ECSignature.parseScriptSignature', function () {
     sigCanonical.forEach(function (hex) {
       var buffer = Buffer.from(hex, 'hex')

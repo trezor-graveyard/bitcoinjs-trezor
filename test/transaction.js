@@ -68,8 +68,6 @@ describe('Transaction', function () {
     }
 
     fixtures.valid.forEach(importExport)
-    fixtures.hashForSignature.forEach(importExport)
-    fixtures.hashForWitnessV0.forEach(importExport)
 
     fixtures.invalid.fromBuffer.forEach(function (f) {
       it('throws on ' + f.exception, function () {
@@ -230,52 +228,6 @@ describe('Transaction', function () {
     }
 
     fixtures.valid.forEach(verify)
-  })
-
-  describe('hashForSignature', function () {
-    it('does not use Witness serialization', function () {
-      var randScript = Buffer.from('6a', 'hex')
-
-      var tx = new Transaction()
-      tx.addInput(Buffer.from('0000000000000000000000000000000000000000000000000000000000000000', 'hex'), 0)
-      tx.addOutput(randScript, 5000000000)
-
-      var original = tx.__toBuffer
-      tx.__toBuffer = function (a, b, c) {
-        if (c !== false) throw new Error('hashForSignature MUST pass false')
-
-        return original.call(this, a, b, c)
-      }
-
-      assert.throws(function () {
-        tx.__toBuffer(undefined, undefined, true)
-      }, /hashForSignature MUST pass false/)
-
-      // assert hashForSignature does not pass false
-      assert.doesNotThrow(function () {
-        tx.hashForSignature(0, randScript, 1)
-      })
-    })
-
-    fixtures.hashForSignature.forEach(function (f) {
-      it('should return ' + f.hash + ' for ' + (f.description ? ('case "' + f.description + '"') : f.script), function () {
-        var tx = Transaction.fromHex(f.txHex)
-        var script = bscript.fromASM(f.script)
-
-        assert.strictEqual(tx.hashForSignature(f.inIndex, script, f.type).toString('hex'), f.hash)
-      })
-    })
-  })
-
-  describe('hashForWitnessV0', function () {
-    fixtures.hashForWitnessV0.forEach(function (f) {
-      it('should return ' + f.hash + ' for ' + (f.description ? ('case "' + f.description + '"') : ''), function () {
-        var tx = Transaction.fromHex(f.txHex)
-        var script = bscript.fromASM(f.script)
-
-        assert.strictEqual(tx.hashForWitnessV0(f.inIndex, script, f.value, f.type).toString('hex'), f.hash)
-      })
-    })
   })
 
   describe('setWitness', function () {
