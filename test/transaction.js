@@ -205,12 +205,11 @@ describe('Transaction', function () {
     })
   })
 
-  describe('getHash/getId', function () {
+  describe('getId', function () {
     function verify (f) {
       it('should return the id for ' + f.id + '(' + f.description + ')', function () {
         var tx = Transaction.fromHex(f.whex || f.hex)
 
-        assert.strictEqual(tx.getHash().toString('hex'), f.hash)
         assert.strictEqual(tx.getId(), f.id)
       })
     }

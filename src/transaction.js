@@ -388,13 +388,14 @@ Transaction.prototype.clone = function () {
   return newTx
 }
 
-Transaction.prototype.getHash = function () {
-  return bcrypto.hash256(this.__toBuffer(undefined, undefined, false))
-}
-
+// used in webwallet on several places
+// and probably connect
+// Can probably be factored out
+// (both trezor and hd-wallet tell txIds)
 Transaction.prototype.getId = function () {
+  var hash = bcrypto.hash256(this.__toBuffer(undefined, undefined, false))
   // transaction hash's are displayed in reverse order
-  return this.getHash().reverse().toString('hex')
+  return hash.reverse().toString('hex')
 }
 
 Transaction.prototype.toBuffer = function (buffer, initialOffset) {
