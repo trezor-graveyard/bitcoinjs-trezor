@@ -2,7 +2,6 @@
 /* eslint-disable no-new */
 
 var assert = require('assert')
-var ecdsa = require('../src/ecdsa')
 var ecurve = require('ecurve')
 var proxyquire = require('proxyquire')
 var sinon = require('sinon')
@@ -11,7 +10,8 @@ var BigInteger = require('bigi')
 var ECPair = require('../src/ecpair')
 
 var fixtures = require('./fixtures/ecpair.json')
-var curve = ecdsa.__curve
+var ecurve = require('ecurve')
+var curve = ecurve.getCurveByName('secp256k1')
 
 var NETWORKS = require('../src/networks')
 var NETWORKS_LIST = [] // Object.values(NETWORKS)
@@ -212,38 +212,6 @@ describe('ECPair', function () {
     beforeEach(function () {
       keyPair = ECPair.makeRandom()
       hash = Buffer.alloc(32)
-    })
-
-    describe('signing', function () {
-      it('wraps ecdsa.sign', sinon.test(function () {
-        this.mock(ecdsa).expects('sign')
-          .once().withArgs(hash, keyPair.d)
-
-        keyPair.sign(hash)
-      }))
-
-      it('throws if no private key is found', function () {
-        keyPair.d = null
-
-        assert.throws(function () {
-          keyPair.sign(hash)
-        }, /Missing private key/)
-      })
-    })
-
-    describe('verify', function () {
-      var signature
-
-      beforeEach(function () {
-        signature = keyPair.sign(hash)
-      })
-
-      it('wraps ecdsa.verify', sinon.test(function () {
-        this.mock(ecdsa).expects('verify')
-          .once().withArgs(hash, signature, keyPair.Q)
-
-        keyPair.verify(hash, signature)
-      }))
     })
   })
 })

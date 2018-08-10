@@ -2,7 +2,6 @@
 /* eslint-disable no-new */
 
 var assert = require('assert')
-var ecdsa = require('../src/ecdsa')
 var sinon = require('sinon')
 
 var BigInteger = require('bigi')
@@ -10,7 +9,8 @@ var ECPair = require('../src/ecpair')
 var HDNode = require('../src/hdnode')
 
 var fixtures = require('./fixtures/hdnode.json')
-var curve = ecdsa.__curve
+var ecurve = require('ecurve')
+var curve = ecurve.getCurveByName('secp256k1')
 
 var NETWORKS = require('../src/networks')
 var NETWORKS_LIST = [] // Object.values(NETWORKS)
@@ -145,30 +145,6 @@ describe('HDNode', function () {
           .once().withArgs().returns('pubKeyBuffer')
 
         assert.strictEqual(hd.getPublicKeyBuffer(), 'pubKeyBuffer')
-      }))
-    })
-
-    describe('sign', function () {
-      it('wraps keyPair.sign', sinon.test(function () {
-        this.mock(keyPair).expects('sign')
-          .once().withArgs(hash).returns('signed')
-
-        assert.strictEqual(hd.sign(hash), 'signed')
-      }))
-    })
-
-    describe('verify', function () {
-      var signature
-
-      beforeEach(function () {
-        signature = hd.sign(hash)
-      })
-
-      it('wraps keyPair.verify', sinon.test(function () {
-        this.mock(keyPair).expects('verify')
-          .once().withArgs(hash, signature).returns('verified')
-
-        assert.strictEqual(hd.verify(hash, signature), 'verified')
       }))
     })
   })
