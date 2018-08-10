@@ -211,6 +211,10 @@ describe('script-templates', function () {
       it('encodes to ' + f.output, function () {
         assert.strictEqual(bscript.toASM(output), f.output)
       })
+
+      it('decodes to ' + f.data, function () {
+        assert.deepEqual(btemplates.nullData.output.decode(output), data)
+      })
     })
   })
 })

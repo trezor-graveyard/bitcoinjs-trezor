@@ -12,6 +12,13 @@ function check (script) {
 }
 check.toJSON = function () { return 'null data output' }
 
+function decode (buffer) {
+  var script = bscript.decompile(buffer)
+  typeforce(check, script)
+
+  return script[1]
+}
+
 function encode (data) {
   typeforce(types.Buffer, data)
 
@@ -22,6 +29,7 @@ function encode (data) {
 module.exports = {
   output: {
     check: check,
+    decode: decode,
     encode: encode
   }
 }
