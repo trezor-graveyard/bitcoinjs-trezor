@@ -40,16 +40,6 @@ describe('script', function () {
 
   describe('fromASM/toASM (templates)', function () {
     fixtures2.valid.forEach(function (f) {
-      if (f.inputHex) {
-        var ih = bscript.toASM(Buffer.from(f.inputHex, 'hex'))
-
-        it('encodes/decodes ' + ih, function () {
-          var script = bscript.fromASM(f.input)
-          assert.strictEqual(script.toString('hex'), f.inputHex)
-          assert.strictEqual(bscript.toASM(script), f.input)
-        })
-      }
-
       if (f.outputHex) {
         it('encodes/decodes ' + f.output, function () {
           var script = bscript.fromASM(f.output)

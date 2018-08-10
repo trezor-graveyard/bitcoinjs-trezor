@@ -20,14 +20,8 @@ function encode (pubKeyHash) {
   return bscript.compile([OPS.OP_0, pubKeyHash])
 }
 
-function decode (buffer) {
-  typeforce(check, buffer)
-
-  return buffer.slice(2)
-}
 
 module.exports = {
   check: check,
-  decode: decode,
   encode: encode
 }

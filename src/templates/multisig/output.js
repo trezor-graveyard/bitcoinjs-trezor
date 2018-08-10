@@ -47,18 +47,7 @@ function encode (m, pubKeys) {
   ))
 }
 
-function decode (buffer, allowIncomplete) {
-  var chunks = bscript.decompile(buffer)
-  typeforce(check, chunks, allowIncomplete)
-
-  return {
-    m: chunks[0] - OP_INT_BASE,
-    pubKeys: chunks.slice(1, -2)
-  }
-}
-
 module.exports = {
   check: check,
-  decode: decode,
   encode: encode
 }

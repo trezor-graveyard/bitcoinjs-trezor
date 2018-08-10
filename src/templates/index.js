@@ -36,18 +36,6 @@ function classifyOutput (script) {
   return types.NONSTANDARD
 }
 
-function classifyInput (script, allowIncomplete) {
-  // XXX: optimization, below functions .decompile before use
-  var chunks = decompile(script)
-
-  if (pubKeyHash.input.check(chunks)) return types.P2PKH
-  if (scriptHash.input.check(chunks, allowIncomplete)) return types.P2SH
-  if (multisig.input.check(chunks, allowIncomplete)) return types.MULTISIG
-  if (pubKey.input.check(chunks)) return types.P2PK
-
-  return types.NONSTANDARD
-}
-
 function classifyWitness (script, allowIncomplete) {
   // XXX: optimization, below functions .decompile before use
   var chunks = decompile(script)
@@ -59,7 +47,6 @@ function classifyWitness (script, allowIncomplete) {
 }
 
 module.exports = {
-  classifyInput: classifyInput,
   classifyOutput: classifyOutput,
   classifyWitness: classifyWitness,
   multisig: multisig,

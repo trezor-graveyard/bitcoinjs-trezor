@@ -17,17 +17,10 @@ function encode (data) {
   return bscript.compile([OPS.OP_RETURN, data])
 }
 
-function decode (buffer) {
-  var script = bscript.decompile(buffer)
-  typeforce(check, script)
-
-  return script[1]
-}
 
 module.exports = {
   output: {
     check: check,
-    decode: decode,
     encode: encode
   }
 }

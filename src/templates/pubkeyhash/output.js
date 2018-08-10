@@ -29,14 +29,7 @@ function encode (pubKeyHash) {
   ])
 }
 
-function decode (buffer) {
-  typeforce(check, buffer)
-
-  return buffer.slice(3, 23)
-}
-
 module.exports = {
   check: check,
-  decode: decode,
   encode: encode
 }

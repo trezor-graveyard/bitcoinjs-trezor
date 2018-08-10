@@ -21,14 +21,8 @@ function encode (scriptHash) {
   return bscript.compile([OPS.OP_HASH160, scriptHash, OPS.OP_EQUAL])
 }
 
-function decode (buffer) {
-  typeforce(check, buffer)
-
-  return buffer.slice(2, 22)
-}
 
 module.exports = {
   check: check,
-  decode: decode,
   encode: encode
 }

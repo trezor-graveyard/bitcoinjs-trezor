@@ -29,14 +29,8 @@ function encode (commitment) {
   return bscript.compile([OPS.OP_RETURN, buffer])
 }
 
-function decode (buffer) {
-  typeforce(check, buffer)
-
-  return bscript.decompile(buffer)[1].slice(4, 36)
-}
 
 module.exports = {
   check: check,
-  decode: decode,
   encode: encode
 }
