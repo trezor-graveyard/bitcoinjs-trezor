@@ -5,6 +5,7 @@ var types = require('../../types')
 var typeforce = require('typeforce')
 var OPS = require('bitcoin-ops')
 
+// used in address.fromOutputScript
 function check (script) {
   var buffer = bscript.compile(script)
 
