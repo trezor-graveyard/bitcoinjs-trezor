@@ -7,6 +7,7 @@ var networks = require('./networks')
 var typeforce = require('typeforce')
 var types = require('./types')
 
+// used in many different places accross the app
 function fromBase58Check (address) {
   var payload = bs58check.decode(address)
 
@@ -23,6 +24,7 @@ function fromBase58Check (address) {
   return { version: version, hash: hash }
 }
 
+// used in many different places accross the app
 function fromBech32 (address) {
   var result = bech32.decode(address)
   var data = bech32.fromWords(result.words.slice(1))
@@ -34,6 +36,7 @@ function fromBech32 (address) {
   }
 }
 
+// used for encoding addresses from emscripten source
 function toBase58Check (hash, version) {
   typeforce(types.tuple(types.Hash160bit, types.UInt16), arguments)
 
@@ -48,6 +51,7 @@ function toBase58Check (hash, version) {
   return bs58check.encode(payload)
 }
 
+// used for encoding addresses from emscripten source
 function toBech32 (data, version, prefix) {
   var words = bech32.toWords(data)
   words.unshift(version)
@@ -55,6 +59,7 @@ function toBech32 (data, version, prefix) {
   return bech32.encode(prefix, words)
 }
 
+// used in hd-wallet for reading addresses from transactions
 function fromOutputScript (outputScript, network) {
   network = network || networks.bitcoin
 
@@ -66,6 +71,8 @@ function fromOutputScript (outputScript, network) {
   throw new Error(bscript.toASM(outputScript) + ' has no matching Address')
 }
 
+// used in hd-wallet for ordering outputs
+// since BIP69 defines sorting on scripts
 function toOutputScript (address, network) {
   network = network || networks.bitcoin
 

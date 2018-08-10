@@ -18,6 +18,9 @@ function check (script) {
 }
 check.toJSON = function () { return 'pubKeyHash output' }
 
+// used for sanity checks
+// after Trezor signs transaction, we encode the expected outputs
+// and compare from what came from Trezor
 function encode (pubKeyHash) {
   typeforce(types.Hash160bit, pubKeyHash)
 

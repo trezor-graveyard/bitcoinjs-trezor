@@ -15,12 +15,14 @@ function check (script) {
 }
 check.toJSON = function () { return 'Witness pubKeyHash output' }
 
+// used for sanity checks
+// after Trezor signs transaction, we encode the expected outputs
+// and compare from what came from Trezor
 function encode (pubKeyHash) {
   typeforce(types.Hash160bit, pubKeyHash)
 
   return bscript.compile([OPS.OP_0, pubKeyHash])
 }
-
 
 module.exports = {
   check: check,

@@ -1,6 +1,8 @@
 var pushdata = require('pushdata-bitcoin')
 var varuint = require('varuint-bitcoin')
 
+// All of these are used in transaction parsing
+
 // https://github.com/feross/buffer/blob/master/index.js#L1127
 function verifuint (value, max) {
   if (typeof value !== 'number') throw new Error('cannot write a non-number as a number')

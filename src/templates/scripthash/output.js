@@ -16,12 +16,14 @@ function check (script) {
 }
 check.toJSON = function () { return 'scriptHash output' }
 
+// used for sanity checks
+// after Trezor signs transaction, we encode the expected outputs
+// and compare from what came from Trezor
 function encode (scriptHash) {
   typeforce(types.Hash160bit, scriptHash)
 
   return bscript.compile([OPS.OP_HASH160, scriptHash, OPS.OP_EQUAL])
 }
-
 
 module.exports = {
   check: check,
