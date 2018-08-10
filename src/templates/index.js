@@ -1,5 +1,4 @@
 var decompile = require('../script').decompile
-var multisig = require('./multisig')
 var nullData = require('./nulldata')
 var pubKey = require('./pubkey')
 var pubKeyHash = require('./pubkeyhash')
@@ -21,7 +20,6 @@ var types = {
 }
 
 module.exports = {
-  multisig: multisig,
   nullData: nullData,
   pubKey: pubKey,
   pubKeyHash: pubKeyHash,

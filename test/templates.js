@@ -65,34 +65,6 @@ describe('script-templates', function () {
     })
   })
 
-  describe('multisig.output', function () {
-    fixtures.valid.forEach(function (f) {
-      if (f.type !== 'multisig') return
-
-      var pubKeys = f.pubKeys.map(function (p) { return Buffer.from(p, 'hex') })
-      var m = pubKeys.length
-
-      var output = btemplates.multisig.output.encode(m, pubKeys)
-
-      it('encodes ' + f.output, function () {
-        assert.strictEqual(bscript.toASM(output), f.output)
-      })
-    })
-
-    fixtures.invalid.multisig.outputs.forEach(function (f) {
-      if (!f.pubKeys) return
-      var pubKeys = f.pubKeys.map(function (p) {
-        return Buffer.from(p, 'hex')
-      })
-
-      it('throws on ' + f.exception, function () {
-        assert.throws(function () {
-          btemplates.multisig.output.encode(f.m, pubKeys)
-        }, new RegExp(f.exception))
-      })
-    })
-  })
-
   describe('scriptHash.output', function () {
     fixtures.valid.forEach(function (f) {
       if (f.type !== 'scripthash') return
