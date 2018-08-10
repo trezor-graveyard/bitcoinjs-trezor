@@ -27,19 +27,6 @@ describe('script-templates', function () {
     })
   })
 
-  describe('pubKey.output', function () {
-    fixtures.valid.forEach(function (f) {
-      if (f.type !== 'pubkey') return
-
-      var pubKey = Buffer.from(f.pubKey, 'hex')
-      var output = btemplates.pubKey.output.encode(pubKey)
-
-      it('encodes to ' + f.output, function () {
-        assert.strictEqual(bscript.toASM(output), f.output)
-      })
-    })
-  })
-
   describe('pubKeyHash.output', function () {
     fixtures.valid.forEach(function (f) {
       if (f.type !== 'pubkeyhash') return

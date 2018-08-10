@@ -1,6 +1,5 @@
 var decompile = require('../script').decompile
 var nullData = require('./nulldata')
-var pubKey = require('./pubkey')
 var pubKeyHash = require('./pubkeyhash')
 var scriptHash = require('./scripthash')
 var witnessPubKeyHash = require('./witnesspubkeyhash')
@@ -21,7 +20,6 @@ var types = {
 
 module.exports = {
   nullData: nullData,
-  pubKey: pubKey,
   pubKeyHash: pubKeyHash,
   scriptHash: scriptHash,
   witnessPubKeyHash: witnessPubKeyHash,
