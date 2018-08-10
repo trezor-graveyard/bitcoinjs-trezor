@@ -10,6 +10,12 @@ function sha256 (buffer) {
   return createHash('sha256').update(buffer).digest()
 }
 
+// used in tx tests + getting xpub out of hdnode
+// HDNode.toBase58
+// (that could be refactored out eventually,
+// since we do that mostly in hd-wallet in wasm,
+// but keep it also in hdnode.js so it works in older
+// browsers without wasm)
 function hash160 (buffer) {
   return ripemd160(sha256(buffer))
 }
