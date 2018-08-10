@@ -7,7 +7,6 @@ var bitcoin = require('../')
 var base58EncodeDecode = require('./fixtures/core/base58_encode_decode.json')
 var base58KeysInvalid = require('./fixtures/core/base58_keys_invalid.json')
 var base58KeysValid = require('./fixtures/core/base58_keys_valid.json')
-var blocksValid = require('./fixtures/core/blocks.json')
 var sigCanonical = require('./fixtures/core/sig_canonical.json')
 var sigHash = require('./fixtures/core/sighash.json')
 var sigNoncanonical = require('./fixtures/core/sig_noncanonical.json')
@@ -118,17 +117,6 @@ describe('Bitcoin-core', function () {
         assert.throws(function () {
           bitcoin.ECPair.fromWIF(string, allowedNetworks)
         }, /(Invalid|Unknown) (checksum|compression flag|network version|WIF length)/)
-      })
-    })
-  })
-
-  describe('Block.fromHex', function () {
-    blocksValid.forEach(function (f) {
-      it('can parse ' + f.id, function () {
-        var block = bitcoin.Block.fromHex(f.hex)
-
-        assert.strictEqual(block.getId(), f.id)
-        assert.strictEqual(block.transactions.length, f.transactions)
       })
     })
   })
