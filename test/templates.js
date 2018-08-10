@@ -131,35 +131,6 @@ describe('script-templates', function () {
     })
   })
 
-  describe('witnessCommitment.output', function () {
-    fixtures.valid.forEach(function (f) {
-      if (f.type !== 'witnesscommitment') return
-      if (!f.scriptPubKey) return
-
-      var commitment = Buffer.from(f.witnessCommitment, 'hex')
-      var scriptPubKey = btemplates.witnessCommitment.output.encode(commitment)
-
-      it('encodes to ' + f.scriptPubKey, function () {
-        assert.strictEqual(bscript.toASM(scriptPubKey), f.scriptPubKey)
-      })
-
-      it('decodes to ' + commitment.toString('hex'), function () {
-        assert.deepEqual(btemplates.witnessCommitment.output.decode(scriptPubKey), commitment)
-      })
-    })
-
-    fixtures.invalid.witnessCommitment.outputs.forEach(function (f) {
-      if (f.commitment) {
-        var hash = Buffer.from(f.commitment, 'hex')
-        it('throws on bad encode data', function () {
-          assert.throws(function () {
-            btemplates.witnessCommitment.output.encode(hash)
-          }, new RegExp(f.exception))
-        })
-      }
-    })
-  })
-
   describe('nullData.output', function () {
     fixtures.valid.forEach(function (f) {
       if (f.type !== 'nulldata') return
