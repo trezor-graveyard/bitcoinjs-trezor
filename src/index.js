@@ -9,7 +9,6 @@ module.exports = {
   bufferutils: require('./bufferutils'), // TODO: remove in 4.0.0
 
   ECPubkey: require('./ecpubkey'),
-  ECSignature: require('./ecsignature'),
   HDNode: require('./hdnode'),
   Transaction: require('./transaction'),
 
