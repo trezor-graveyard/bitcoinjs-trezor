@@ -6,9 +6,9 @@ var proxyquire = require('proxyquire')
 var sinon = require('sinon')
 
 var BigInteger = require('bigi')
-var ECPair = require('../src/ecpair')
+var ECPubkey = require('../src/ecpubkey')
 
-var fixtures = require('./fixtures/ecpair.json')
+var fixtures = require('./fixtures/ecpubkey.json')
 var ecurve = require('ecurve')
 var curve = ecurve.getCurveByName('secp256k1')
 
@@ -20,16 +20,16 @@ for (var networkName in NETWORKS) {
 var dfQ = fixtures.valid[0].Q
 var dQ = ecurve.Point.decodeFrom(curve, Buffer.from(dfQ, 'hex'))
 
-describe('ECPair', function () {
+describe('ECPubkey', function () {
   describe('constructor', function () {
     it('defaults to compressed', function () {
-      var keyPair = new ECPair(dQ)
+      var keyPair = new ECPubkey(dQ)
 
       assert.strictEqual(keyPair.compressed, true)
     })
 
     it('supports the uncompressed option', function () {
-      var keyPair = new ECPair(dQ, {
+      var keyPair = new ECPubkey(dQ, {
         compressed: false
       })
 
@@ -37,7 +37,7 @@ describe('ECPair', function () {
     })
 
     it('supports the network option', function () {
-      var keyPair = new ECPair(dQ, {
+      var keyPair = new ECPubkey(dQ, {
         compressed: false,
         network: NETWORKS.testnet
       })
@@ -50,7 +50,7 @@ describe('ECPair', function () {
         var Q = f.Q && ecurve.Point.decodeFrom(curve, Buffer.from(f.Q, 'hex'))
 
         assert.throws(function () {
-          new ECPair(Q, f.options)
+          new ECPubkey(Q, f.options)
         }, new RegExp(f.exception))
       })
     })
@@ -60,7 +60,7 @@ describe('ECPair', function () {
     var keyPair
 
     beforeEach(function () {
-      keyPair = new ECPair(dQ)
+      keyPair = new ECPubkey(dQ)
     })
 
     it('wraps Q.getEncoded', sinon.test(function () {
@@ -77,7 +77,7 @@ describe('ECPair', function () {
         var Q = ecurve.Point.decodeFrom(curve, Buffer.from(f.Q, 'hex'))
 
 
-        var keyPair = new ECPair(Q, {
+        var keyPair = new ECPubkey(Q, {
           compressed: f.compressed,
           network: NETWORKS[f.network]
         })

@@ -5,7 +5,7 @@ var assert = require('assert')
 var sinon = require('sinon')
 
 var BigInteger = require('bigi')
-var ECPair = require('../src/ecpair')
+var ECPubkey = require('../src/ecpubkey')
 var HDNode = require('../src/hdnode')
 
 var fixtures = require('./fixtures/hdnode.json')
@@ -34,7 +34,7 @@ describe('HDNode', function () {
 
     beforeEach(function () {
       var Q = ecurve.Point.decodeFrom(curve, Buffer.from('0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798', 'hex'))
-      keyPair = new ECPair(Q)
+      keyPair = new ECPubkey(Q)
       chainCode = Buffer.alloc(32, 1)
     })
 
@@ -67,12 +67,12 @@ describe('HDNode', function () {
     })
   })
 
-  describe('ECPair wrappers', function () {
+  describe('ECPubkey wrappers', function () {
     var keyPair, hd, hash
 
     beforeEach(function () {
       var Q = ecurve.Point.decodeFrom(curve, Buffer.from('0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798', 'hex'))
-      keyPair = new ECPair(Q)
+      keyPair = new ECPubkey(Q)
       hash = Buffer.alloc(32)
 
       var chainCode = Buffer.alloc(32)

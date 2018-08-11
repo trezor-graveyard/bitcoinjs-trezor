@@ -7,13 +7,13 @@ var types = require('./types')
 var NETWORKS = require('./networks')
 
 var BigInteger = require('bigi')
-var ECPair = require('./ecpair')
+var ECPubkey = require('./ecpubkey')
 
 var ecurve = require('ecurve')
 var curve = ecurve.getCurveByName('secp256k1')
 
 function HDNode (keyPair, chainCode) {
-  typeforce(types.tuple('ECPair', types.Buffer256bit), arguments)
+  typeforce(types.tuple('ECPubkey', types.Buffer256bit), arguments)
 
   if (!keyPair.compressed) throw new TypeError('BIP32 only allows compressed keyPairs')
 
@@ -74,7 +74,7 @@ HDNode.fromBase58 = function (string, networks) {
   var Q = ecurve.Point.decodeFrom(curve, buffer.slice(45, 78))
   // Q.compressed is assumed, if somehow this assumption is broken, `new HDNode` will throw
 
-  var keyPair = new ECPair(Q, { network: network })
+  var keyPair = new ECPubkey(Q, { network: network })
 
   var hd = new HDNode(keyPair, chainCode)
   hd.depth = depth
@@ -158,7 +158,7 @@ HDNode.prototype.derive = function (index) {
     return this.derive(index + 1)
   }
 
-  derivedKeyPair = new ECPair(Ki, {
+  derivedKeyPair = new ECPubkey(Ki, {
     network: this.keyPair.network
   })
 

@@ -15,7 +15,7 @@ var BigInteger = require('bigi')
 var ecurve = require('ecurve')
 var secp256k1 = ecurve.getCurveByName('secp256k1')
 
-function ECPair (Q, options) {
+function ECPubkey (Q, options) {
   if (options) {
     typeforce({
       compressed: types.maybe(types.Boolean),
@@ -34,14 +34,14 @@ function ECPair (Q, options) {
 
 // used in HDNode.getAddress
 // that is used in hd-wallet when we dont have emscripten
-ECPair.prototype.getAddress = function () {
+ECPubkey.prototype.getAddress = function () {
   return baddress.toBase58Check(bcrypto.hash160(this.getPublicKeyBuffer()), this.network.pubKeyHash)
 }
 
 // used in HDNode toBase58
 // that is used in hd-wallet when we dont have emscripten
-ECPair.prototype.getPublicKeyBuffer = function () {
+ECPubkey.prototype.getPublicKeyBuffer = function () {
   return this.Q.getEncoded(this.compressed)
 }
 
-module.exports = ECPair
+module.exports = ECPubkey
