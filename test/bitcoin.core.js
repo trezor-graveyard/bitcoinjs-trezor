@@ -80,47 +80,6 @@ describe('Bitcoin-core', function () {
     })
   })
 
-  // base58KeysValid
-  describe('ECPair', function () {
-    base58KeysValid.forEach(function (f) {
-      var string = f[0]
-      var hex = f[1]
-      var params = f[2]
-
-      if (!params.isPrivkey) return
-
-      var network = params.isTestnet ? bitcoin.networks.testnet : bitcoin.networks.bitcoin
-      var keyPair = bitcoin.ECPair.fromWIF(string, network)
-
-      it('fromWIF imports ' + string, function () {
-        assert.strictEqual(keyPair.d.toHex(), hex)
-        assert.strictEqual(keyPair.compressed, params.isCompressed)
-      })
-
-      it('toWIF exports ' + hex + ' to ' + string, function () {
-        assert.strictEqual(keyPair.toWIF(), string)
-      })
-    })
-  })
-
-  // base58KeysInvalid
-  describe('ECPair.fromWIF', function () {
-    var allowedNetworks = [
-      bitcoin.networks.bitcoin,
-      bitcoin.networks.testnet
-    ]
-
-    base58KeysInvalid.forEach(function (f) {
-      var string = f[0]
-
-      it('throws on ' + string, function () {
-        assert.throws(function () {
-          bitcoin.ECPair.fromWIF(string, allowedNetworks)
-        }, /(Invalid|Unknown) (checksum|compression flag|network version|WIF length)/)
-      })
-    })
-  })
-
   // txValid
   describe('Transaction.fromHex', function () {
     txValid.forEach(function (f) {

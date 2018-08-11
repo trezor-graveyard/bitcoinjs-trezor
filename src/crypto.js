@@ -12,6 +12,7 @@ function sha256 (buffer) {
 
 // used in tx tests + getting xpub out of hdnode
 // HDNode.toBase58
+// + HDNode.derive
 // (that could be refactored out eventually,
 // since we do that mostly in hd-wallet in wasm,
 // but keep it also in hdnode.js so it works in older
