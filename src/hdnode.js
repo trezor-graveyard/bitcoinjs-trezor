@@ -12,6 +12,10 @@ var ECPubkey = require('./ecpubkey')
 var ecurve = require('ecurve')
 var curve = ecurve.getCurveByName('secp256k1')
 
+// we keep all internal representation
+// of HD Nodes in this object
+// However, we also often use emscripten and webworker
+// code to make derivations faster
 function HDNode (keyPair, chainCode) {
   typeforce(types.tuple('ECPubkey', types.Buffer256bit), arguments)
 
@@ -28,7 +32,7 @@ HDNode.HIGHEST_BIT = 0x80000000
 HDNode.LENGTH = 78
 HDNode.MASTER_SECRET = Buffer.from('Bitcoin seed', 'utf8')
 
-// Used in import from XPuB
+// Used in import from XPub
 HDNode.fromBase58 = function (string, networks) {
   var buffer = base58check.decode(string)
   if (buffer.length !== 78) throw new Error('Invalid buffer length')
@@ -172,29 +176,6 @@ HDNode.prototype.derive = function (index) {
   hd.parentFingerprint = fingerprint.readUInt32BE(0)
 
   return hd
-}
-
-HDNode.prototype.derivePath = function (path) {
-  typeforce(types.BIP32Path, path)
-
-  var splitPath = path.split('/')
-  if (splitPath[0] === 'm') {
-    if (this.parentFingerprint) {
-      throw new Error('Not a master node')
-    }
-
-    splitPath = splitPath.slice(1)
-  }
-
-  return splitPath.reduce(function (prevHd, indexStr) {
-    var index
-    if (indexStr.slice(-1) === "'") {
-      throw new Error('Cennot derive hardened')
-    } else {
-      index = parseInt(indexStr, 10)
-      return prevHd.derive(index)
-    }
-  }, this)
 }
 
 module.exports = HDNode

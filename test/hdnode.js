@@ -125,34 +125,6 @@ describe('HDNode', function () {
       var hd = HDNode.fromBase58(f.master.base58, network)
       var master = hd
 
-      // testing deriving path from master
-      f.children.forEach(function (c) {
-        it(c.path + ' from ' + f.master.fingerprint + ' by path', function () {
-          var child = master.derivePath(c.path)
-          var childNoM = master.derivePath(c.path.slice(2)) // no m/ on path
-
-          verifyVector(child, c)
-          verifyVector(childNoM, c)
-        })
-      })
-
-      // testing deriving path from children
-      f.children.forEach(function (c, i) {
-        var cn = master.derivePath(c.path)
-
-        f.children.slice(i + 1).forEach(function (cc) {
-          it(cc.path + ' from ' + c.fingerprint + ' by path', function () {
-            var ipath = cc.path.slice(2).split('/').slice(i + 1).join('/')
-            var child = cn.derivePath(ipath)
-            verifyVector(child, cc)
-
-            assert.throws(function () {
-              cn.derivePath('m/' + ipath)
-            }, /Not a master node/)
-          })
-        })
-      })
-
       // FIXME: test data is only testing Private -> private for now
       f.children.forEach(function (c) {
         if (c.m === undefined) return
@@ -187,12 +159,6 @@ describe('HDNode', function () {
         assert.throws(function () {
           master.derive(fx)
         }, /Expected UInt32/)
-      })
-
-      fixtures.invalid.derivePath.forEach(function (fx) {
-        assert.throws(function () {
-          master.derivePath(fx)
-        }, /Expected BIP32 derivation path/)
       })
     })
   })
