@@ -21,6 +21,7 @@ function isPushOnlyChunk (value) {
 }
 
 function isPushOnly (value) {
+  console.log("fuck isp")
   return types.Array(value) && value.every(isPushOnlyChunk)
 }
 
@@ -157,18 +158,6 @@ function fromASM (asm) {
   }))
 }
 
-function toStack (chunks) {
-  chunks = decompile(chunks)
-  typeforce(isPushOnly, chunks)
-
-  return chunks.map(function (op) {
-    if (Buffer.isBuffer(op)) return op
-    if (op === OPS.OP_0) return Buffer.allocUnsafe(0)
-
-    return scriptNumber.encode(op - OP_INT_BASE)
-  })
-}
-
 function isCanonicalPubKey (buffer) {
   if (!Buffer.isBuffer(buffer)) return false
   if (buffer.length < 33) return false
@@ -203,7 +192,6 @@ module.exports = {
   decompile: decompile,
   fromASM: fromASM,
   toASM: toASM,
-  toStack: toStack,
 
   number: require('./script_number'),
 

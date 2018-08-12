@@ -61,23 +61,6 @@ describe('script', function () {
     })
   })
 
-  describe('toStack', function () {
-    fixtures.valid.forEach(function (f) {
-      it('returns ' + !!f.stack + ' for ' + f.asm, function () {
-        if (!f.stack || !f.asm) return
-
-        var script = bscript.fromASM(f.asm)
-
-        var stack = bscript.toStack(script)
-        assert.deepEqual(stack.map(function (x) {
-          return x.toString('hex')
-        }), f.stack)
-
-        assert.equal(bscript.toASM(bscript.compile(stack)), f.asm, 'should rebuild same script from stack')
-      })
-    })
-  })
-
   describe('compile (via fromASM)', function () {
     fixtures.valid.forEach(function (f) {
       it('(' + f.type + ') compiles ' + f.asm, function () {
