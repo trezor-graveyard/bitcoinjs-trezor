@@ -3,7 +3,6 @@ var bip66 = require('bip66')
 var pushdata = require('pushdata-bitcoin')
 var typeforce = require('typeforce')
 var types = require('./types')
-var scriptNumber = require('./script_number')
 
 var OPS = require('bitcoin-ops')
 var REVERSE_OPS = require('bitcoin-ops/map')
@@ -162,6 +161,4 @@ module.exports = {
   decompile: decompile,
   fromASM: fromASM,
   toASM: toASM,
-
-  number: require('./script_number'),
 }
