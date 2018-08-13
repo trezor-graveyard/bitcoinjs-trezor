@@ -1,0 +1,113 @@
+/* @flow */
+
+export type Network = {
+    bip32: {
+        public: number;
+        private: number;
+    };
+    bech32: ?string;
+    pubKeyHash: number;
+    scriptHash: number;
+    dustThreshold: number;
+}
+
+export type Output = {
+    script: Buffer;
+    value: number;
+};
+
+export type Input = {
+    script: Buffer;
+    hash: Buffer;
+    index: number;
+    sequence: number;
+};
+
+type Stack = Array<Buffer | number>;
+
+export interface address {
+    static fromBase58Check(address: string): {hash: Buffer, version: number};
+    static fromBech32(address: string): {data: Buffer, version: number, prefix: string};
+    static fromOutputScript(script: Buffer, network?: Network): string;
+    static toBase58Check(hash: Buffer, version: number): string;
+    static toOutputScript(address: string, network?: Network): Buffer;
+};
+
+export interface HDNode {
+    depth: number;
+    parentFingerprint: number;
+    index: number;
+    getPublicKeyBuffer(): Buffer;
+    setNetwork(network: Network): void;
+    chainCode: Buffer;
+    static fromBase58(
+        str: string,
+        networks: ?(Array<Network> | Network)
+    ): HDNode;
+    derive(index: number): HDNode;
+    derivePath(path: string): HDNode;
+    toBase58(): string;
+    getAddress(): string;
+    getIdentifier(): Buffer;
+
+    static fromBase58(base: string, network?: ?(Network | Array<Network>)): HDNode;
+
+    static fromInternal(chainCode: Buffer, publicKey: Buffer, network: Network, depth: number, index: number, parentFingerprint: number): HDNode; 
+}
+
+export interface Transaction {
+    version: number;
+    locktime: number;
+    ins: Array<Input>;
+    outs: Array<Output>;
+
+    constructor(): void;
+    static fromHex(hex: string, zcash?: boolean): Transaction;
+    toBuffer(): Buffer;
+    toHex(): string;
+    getId(): string;
+
+    static isCoinbaseHash(buffer: Buffer): boolean;
+    byteLength(): number;
+    __byteLength(witness: boolean): number;
+
+    joinsplitByteLength(): number;
+    joinsplits: Array<any>;
+}
+
+export interface crypto {
+    static hash256(buffer: Buffer): Buffer;
+    static hash160(buffer: Buffer): Buffer;
+}
+
+export interface script {
+  static scriptHash: {
+    output: {
+      encode: (scriptHash: Buffer) => Buffer;
+    };
+  };
+  static pubKeyHash: {
+    output: {
+      encode: (pubKeyHash: Buffer) => Buffer;
+    };
+  };
+  static witnessPubKeyHash: {
+    output: {
+      encode: (pubkeyHash: Buffer) => Buffer;
+    };
+  };
+  static witnessScriptHash: {
+    output: {
+      encode: (scriptHash: Buffer) => Buffer;
+    };
+  };
+  static nullData: {
+    output: {
+      check: (script: Stack | Buffer) => boolean;
+      encode: (scriptHash: Buffer) => Buffer;
+      decode: (script: Buffer) => Buffer;
+    };
+  };
+}
+
+export var networks: {[key: string]: Network} = {}
