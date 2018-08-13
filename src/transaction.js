@@ -275,26 +275,22 @@ Transaction.prototype.isCoinbase = function () {
   return this.ins.length === 1 && Transaction.isCoinbaseHash(this.ins[0].hash)
 }
 
+// used in toHex/toBuffer
 Transaction.prototype.hasWitnesses = function () {
   return this.ins.some(function (x) {
     return x.witness.length !== 0
   })
 }
 
-Transaction.prototype.weight = function () {
-  var base = this.__byteLength(false)
-  var total = this.__byteLength(true)
-  return base * 3 + total
-}
-
-Transaction.prototype.virtualSize = function () {
-  return Math.ceil(this.weight() / 4)
-}
-
+// we are saving both actual tx length and
+// virtual tx length; virtual comes from backend,
+// we need to compute actual
 Transaction.prototype.byteLength = function () {
   return this.__byteLength(true)
 }
 
+// we need to know joinsplit bytelength
+// to tell the size to trezor before
 Transaction.prototype.joinsplitByteLength = function () {
   if (this.version < 2) {
     return 0

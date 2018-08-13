@@ -154,24 +154,6 @@ describe('Transaction', function () {
     })
   })
 
-  describe('weight/virtualSize', function () {
-    it('computes virtual size', function () {
-      fixtures.valid.forEach(function (f) {
-        var transaction = Transaction.fromHex(f.whex ? f.whex : f.hex, false)
-
-        assert.strictEqual(transaction.virtualSize(), f.virtualSize)
-      })
-    })
-
-    it('computes weight', function () {
-      fixtures.valid.forEach(function (f) {
-        var transaction = Transaction.fromHex(f.whex ? f.whex : f.hex, false)
-
-        assert.strictEqual(transaction.weight(), f.weight)
-      })
-    })
-  })
-
   describe('clone', function () {
     fixtures.valid.forEach(function (f) {
       var actual, expected
