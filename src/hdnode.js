@@ -88,9 +88,33 @@ HDNode.fromBase58 = function (string, networks) {
   return hd
 }
 
+// used in conversion from trezor result to HDNode
+// (faster than parsing xpub)
+HDNode.prototype.fromInternal = function (chainCode, publicKey, network, depth, index, parentFingerprint) {
+  var Q = ecurve.Point.decodeFrom(curve, publicKey)
+  var keyPair = new ECPubkey(Q, {network: network})
+  var node = new HDNode(keyPair, chainCode)
+  node.depth = depth
+  node.index = index
+  node.parentFingerprint = parentFingerprint
+  return node
+}
+
 // used in hd-wallet if we dont have emscripten
 HDNode.prototype.getAddress = function () {
   return this.keyPair.getAddress()
+}
+
+// used when we change xpub prefix
+// and we want to export the xpub as string
+HDNode.prototype.setNetwork = function (network) {
+  this.keyPair.network = network
+}
+
+// used for sending HDNode data to emscripten worker
+// (we need pure JS object)
+HDNode.prototype.getPublicKeyBuffer = function () {
+  return this.keyPair.getPublicKeyBuffer()
 }
 
 // maybe used in hd-wallet if we dont have emscripten
