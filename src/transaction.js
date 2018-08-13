@@ -334,34 +334,6 @@ Transaction.prototype.__byteLength = function (__allowWitness) {
   )
 }
 
-Transaction.prototype.clone = function () {
-  var newTx = new Transaction(this.zcash)
-  newTx.version = this.version
-  newTx.locktime = this.locktime
-  newTx.zcash = this.zcash
-  if (newTx.zcash) {
-    newTx.versionGroupId = this.versionGroupId
-    newTx.expiry = this.expiry
-  }
-  newTx.ins = this.ins.map(function (txIn) {
-    return {
-      hash: txIn.hash,
-      index: txIn.index,
-      script: txIn.script,
-      sequence: txIn.sequence,
-      witness: txIn.witness
-    }
-  })
-
-  newTx.outs = this.outs.map(function (txOut) {
-    return {
-      script: txOut.script,
-      value: txOut.value
-    }
-  })
-
-  return newTx
-}
 
 // used in webwallet on several places
 // and probably connect

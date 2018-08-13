@@ -154,25 +154,6 @@ describe('Transaction', function () {
     })
   })
 
-  describe('clone', function () {
-    fixtures.valid.forEach(function (f) {
-      var actual, expected
-
-      beforeEach(function () {
-        expected = Transaction.fromHex(f.hex, false)
-        actual = expected.clone()
-      })
-
-      it('should have value equality', function () {
-        assert.deepEqual(actual, expected)
-      })
-
-      it('should not have reference equality', function () {
-        assert.notEqual(actual, expected)
-      })
-    })
-  })
-
   describe('getId', function () {
     function verify (f) {
       it('should return the id for ' + f.id + '(' + f.description + ')', function () {
