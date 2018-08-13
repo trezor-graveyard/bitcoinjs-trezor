@@ -9,6 +9,7 @@ var OPS = require('bitcoin-ops')
 var REVERSE_OPS = require('bitcoin-ops/map')
 var OP_INT_BASE = OPS.OP_RESERVED // OP_1 - 1
 
+// used in script.compile
 function asMinimalOP (buffer) {
   if (buffer.length === 0) return OPS.OP_0
   if (buffer.length !== 1) return
@@ -16,6 +17,11 @@ function asMinimalOP (buffer) {
   if (buffer[0] === 0x81) return OPS.OP_1NEGATE
 }
 
+// used everywhere, where we convert
+// type "OP_something BUFFER OP_something"
+// to buffer of hexa data
+//
+// It could probably be refactored away, but that would take time
 function compile (chunks) {
   // TODO: remove me
   if (Buffer.isBuffer(chunks)) return chunks
@@ -66,6 +72,11 @@ function compile (chunks) {
   return buffer
 }
 
+// used everywhere, where we convert
+// buffer of hexa data
+// to type "OP_something BUFFER OP_something"
+//
+// It could probably be refactored away, but that would take time
 function decompile (buffer) {
   // TODO: remove me
   if (types.Array(buffer)) return buffer
@@ -111,6 +122,8 @@ function decompile (buffer) {
   return chunks
 }
 
+// ASM is the string representation of chunk format
+// used in tests, too muc work to remove it now
 function toASM (chunks) {
   if (Buffer.isBuffer(chunks)) {
     chunks = decompile(chunks)
@@ -129,6 +142,8 @@ function toASM (chunks) {
   }).join(' ')
 }
 
+// ASM is the string representation of chunk format
+// used in tests, too muc work to remove it now
 function fromASM (asm) {
   typeforce(types.String, asm)
 
