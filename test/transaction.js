@@ -7,7 +7,7 @@ var Transaction = require('../src/transaction')
 
 describe('Transaction', function () {
   function fromRaw (raw, noWitness) {
-    var tx = new Transaction()
+    var tx = new Transaction(false)
     tx.version = raw.version
     tx.locktime = raw.locktime
 
@@ -53,14 +53,14 @@ describe('Transaction', function () {
       var txHex = f.hex || f.txHex
 
       it('imports ' + f.description + ' (' + id + ')', function () {
-        var actual = Transaction.fromHex(txHex)
+        var actual = Transaction.fromHex(txHex, false)
 
         assert.strictEqual(actual.toHex(), txHex)
       })
 
       if (f.whex) {
         it('imports ' + f.description + ' (' + id + ') as witness', function () {
-          var actual = Transaction.fromHex(f.whex)
+          var actual = Transaction.fromHex(f.whex, false)
 
           assert.strictEqual(actual.toHex(), f.whex)
         })
@@ -72,14 +72,14 @@ describe('Transaction', function () {
     fixtures.invalid.fromBuffer.forEach(function (f) {
       it('throws on ' + f.exception, function () {
         assert.throws(function () {
-          Transaction.fromHex(f.hex)
+          Transaction.fromHex(f.hex, false)
         }, new RegExp(f.exception))
       })
     })
 
     it('.version should be interpreted as an int32le', function () {
       var txHex = 'ffffffff0000ffffffff'
-      var tx = Transaction.fromHex(txHex)
+      var tx = Transaction.fromHex(txHex, false)
       assert.equal(-1, tx.version)
       assert.equal(0xffffffff, tx.locktime)
     })
@@ -122,7 +122,7 @@ describe('Transaction', function () {
   describe('hasWitnesses', function () {
     fixtures.valid.forEach(function (f) {
       it('detects if the transaction has witnesses: ' + (f.whex ? 'true' : 'false'), function () {
-        assert.strictEqual(Transaction.fromHex(f.whex ? f.whex : f.hex).hasWitnesses(), !!f.whex)
+        assert.strictEqual(Transaction.fromHex(f.whex ? f.whex : f.hex, false).hasWitnesses(), !!f.whex)
       })
     })
   })
@@ -130,7 +130,7 @@ describe('Transaction', function () {
   describe('weight/virtualSize', function () {
     it('computes virtual size', function () {
       fixtures.valid.forEach(function (f) {
-        var transaction = Transaction.fromHex(f.whex ? f.whex : f.hex)
+        var transaction = Transaction.fromHex(f.whex ? f.whex : f.hex, false)
 
         assert.strictEqual(transaction.virtualSize(), f.virtualSize)
       })
@@ -138,7 +138,7 @@ describe('Transaction', function () {
 
     it('computes weight', function () {
       fixtures.valid.forEach(function (f) {
-        var transaction = Transaction.fromHex(f.whex ? f.whex : f.hex)
+        var transaction = Transaction.fromHex(f.whex ? f.whex : f.hex, false)
 
         assert.strictEqual(transaction.weight(), f.weight)
       })
@@ -152,13 +152,13 @@ describe('Transaction', function () {
     })
 
     it('returns an index', function () {
-      var tx = new Transaction()
+      var tx = new Transaction(false)
       assert.strictEqual(tx.addInput(prevTxHash, 0), 0)
       assert.strictEqual(tx.addInput(prevTxHash, 0), 1)
     })
 
     it('defaults to empty script, witness and 0xffffffff SEQUENCE number', function () {
-      var tx = new Transaction()
+      var tx = new Transaction(false)
       tx.addInput(prevTxHash, 0)
 
       assert.strictEqual(tx.ins[0].script.length, 0)
@@ -168,7 +168,7 @@ describe('Transaction', function () {
 
     fixtures.invalid.addInput.forEach(function (f) {
       it('throws on ' + f.exception, function () {
-        var tx = new Transaction()
+        var tx = new Transaction(false)
         var hash = Buffer.from(f.hash, 'hex')
 
         assert.throws(function () {
@@ -180,7 +180,7 @@ describe('Transaction', function () {
 
   describe('addOutput', function () {
     it('returns an index', function () {
-      var tx = new Transaction()
+      var tx = new Transaction(false)
       assert.strictEqual(tx.addOutput(Buffer.alloc(0), 0), 0)
       assert.strictEqual(tx.addOutput(Buffer.alloc(0), 0), 1)
     })
@@ -191,7 +191,7 @@ describe('Transaction', function () {
       var actual, expected
 
       beforeEach(function () {
-        expected = Transaction.fromHex(f.hex)
+        expected = Transaction.fromHex(f.hex, false)
         actual = expected.clone()
       })
 
@@ -208,7 +208,7 @@ describe('Transaction', function () {
   describe('getId', function () {
     function verify (f) {
       it('should return the id for ' + f.id + '(' + f.description + ')', function () {
-        var tx = Transaction.fromHex(f.whex || f.hex)
+        var tx = Transaction.fromHex(f.whex || f.hex, false)
 
         assert.strictEqual(tx.getId(), f.id)
       })
@@ -220,7 +220,7 @@ describe('Transaction', function () {
   describe('isCoinbase', function () {
     function verify (f) {
       it('should return ' + f.coinbase + ' for ' + f.id + '(' + f.description + ')', function () {
-        var tx = Transaction.fromHex(f.hex)
+        var tx = Transaction.fromHex(f.hex, false)
 
         assert.strictEqual(tx.isCoinbase(), f.coinbase)
       })
@@ -232,7 +232,7 @@ describe('Transaction', function () {
   describe('setWitness', function () {
     it('only accepts a a witness stack (Array of Buffers)', function () {
       assert.throws(function () {
-        (new Transaction()).setWitness(0, 'foobar')
+        (new Transaction(false)).setWitness(0, 'foobar')
       }, /Expected property "1" of type \[Buffer], got String "foobar"/)
     })
   })

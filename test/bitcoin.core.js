@@ -91,7 +91,7 @@ describe('Bitcoin-core', function () {
       //      var verifyFlags = f[2] // TODO: do we need to test this?
 
       it('can decode ' + fhex, function () {
-        var transaction = bitcoin.Transaction.fromHex(fhex)
+        var transaction = bitcoin.Transaction.fromHex(fhex, false)
 
         transaction.ins.forEach(function (txIn, i) {
           var input = inputs[i]
