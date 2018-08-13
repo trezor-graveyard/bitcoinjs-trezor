@@ -50,17 +50,6 @@ describe('script', function () {
     })
   })
 
-  describe('isPushOnly', function () {
-    fixtures.valid.forEach(function (f) {
-      it('returns ' + !!f.stack + ' for ' + f.asm, function () {
-        var script = bscript.fromASM(f.asm)
-        var chunks = bscript.decompile(script)
-
-        assert.strictEqual(bscript.isPushOnly(chunks), !!f.stack)
-      })
-    })
-  })
-
   describe('compile (via fromASM)', function () {
     fixtures.valid.forEach(function (f) {
       it('(' + f.type + ') compiles ' + f.asm, function () {

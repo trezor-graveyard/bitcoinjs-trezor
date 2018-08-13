@@ -9,22 +9,6 @@ var OPS = require('bitcoin-ops')
 var REVERSE_OPS = require('bitcoin-ops/map')
 var OP_INT_BASE = OPS.OP_RESERVED // OP_1 - 1
 
-function isOPInt (value) {
-  return types.Number(value) &&
-    ((value === OPS.OP_0) ||
-    (value >= OPS.OP_1 && value <= OPS.OP_16) ||
-    (value === OPS.OP_1NEGATE))
-}
-
-function isPushOnlyChunk (value) {
-  return types.Buffer(value) || isOPInt(value)
-}
-
-function isPushOnly (value) {
-  console.log("fuck isp")
-  return types.Array(value) && value.every(isPushOnlyChunk)
-}
-
 function asMinimalOP (buffer) {
   if (buffer.length === 0) return OPS.OP_0
   if (buffer.length !== 1) return
@@ -197,6 +181,5 @@ module.exports = {
 
   isCanonicalPubKey: isCanonicalPubKey,
   isCanonicalSignature: isCanonicalSignature,
-  isPushOnly: isPushOnly,
   isDefinedHashType: isDefinedHashType
 }
