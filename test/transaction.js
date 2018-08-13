@@ -2,14 +2,41 @@
 
 var assert = require('assert')
 var bscript = require('../src/script')
+var types = require('../src/types')
 var fixtures = require('./fixtures/transaction')
 var Transaction = require('../src/transaction')
+var EMPTY_SCRIPT = Buffer.allocUnsafe(0)
+var EMPTY_WITNESS = []
 
 describe('Transaction', function () {
   function fromRaw (raw, noWitness) {
     var tx = new Transaction(false)
     tx.version = raw.version
     tx.locktime = raw.locktime
+
+    function addInput(hash, index, sequence, scriptSig) {
+      if (types.Null(sequence)) {
+        sequence = Transaction.DEFAULT_SEQUENCE
+      }
+
+      // Add the input and return the input's index
+      return (tx.ins.push({
+        hash: hash,
+        index: index,
+        script: scriptSig || EMPTY_SCRIPT,
+        sequence: sequence,
+        witness: EMPTY_WITNESS
+      }) - 1)
+    }
+
+    function addOutput(scriptPubKey, value) {
+      // Add the output and return the output's index
+      return (tx.outs.push({
+        script: scriptPubKey,
+        value: value
+      }) - 1)
+    }
+
 
     raw.ins.forEach(function (txIn, i) {
       var txHash = Buffer.from(txIn.hash, 'hex')
@@ -21,7 +48,7 @@ describe('Transaction', function () {
         scriptSig = bscript.fromASM(txIn.script)
       }
 
-      tx.addInput(txHash, txIn.index, txIn.sequence, scriptSig)
+      addInput(txHash, txIn.index, txIn.sequence, scriptSig)
 
       if (!noWitness && txIn.witness) {
         var witness = txIn.witness.map(function (x) {
@@ -41,7 +68,7 @@ describe('Transaction', function () {
         script = bscript.fromASM(txOut.script)
       }
 
-      tx.addOutput(script, txOut.value)
+      addOutput(script, txOut.value)
     })
 
     return tx
@@ -142,47 +169,6 @@ describe('Transaction', function () {
 
         assert.strictEqual(transaction.weight(), f.weight)
       })
-    })
-  })
-
-  describe('addInput', function () {
-    var prevTxHash
-    beforeEach(function () {
-      prevTxHash = Buffer.from('ffffffff00ffff000000000000000000000000000000000000000000101010ff', 'hex')
-    })
-
-    it('returns an index', function () {
-      var tx = new Transaction(false)
-      assert.strictEqual(tx.addInput(prevTxHash, 0), 0)
-      assert.strictEqual(tx.addInput(prevTxHash, 0), 1)
-    })
-
-    it('defaults to empty script, witness and 0xffffffff SEQUENCE number', function () {
-      var tx = new Transaction(false)
-      tx.addInput(prevTxHash, 0)
-
-      assert.strictEqual(tx.ins[0].script.length, 0)
-      assert.strictEqual(tx.ins[0].witness.length, 0)
-      assert.strictEqual(tx.ins[0].sequence, 0xffffffff)
-    })
-
-    fixtures.invalid.addInput.forEach(function (f) {
-      it('throws on ' + f.exception, function () {
-        var tx = new Transaction(false)
-        var hash = Buffer.from(f.hash, 'hex')
-
-        assert.throws(function () {
-          tx.addInput(hash, f.index)
-        }, new RegExp(f.exception))
-      })
-    })
-  })
-
-  describe('addOutput', function () {
-    it('returns an index', function () {
-      var tx = new Transaction(false)
-      assert.strictEqual(tx.addOutput(Buffer.alloc(0), 0), 0)
-      assert.strictEqual(tx.addOutput(Buffer.alloc(0), 0), 1)
     })
   })
 

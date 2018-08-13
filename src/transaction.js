@@ -275,38 +275,6 @@ Transaction.prototype.isCoinbase = function () {
   return this.ins.length === 1 && Transaction.isCoinbaseHash(this.ins[0].hash)
 }
 
-Transaction.prototype.addInput = function (hash, index, sequence, scriptSig) {
-  typeforce(types.tuple(
-    types.Hash256bit,
-    types.UInt32,
-    types.maybe(types.UInt32),
-    types.maybe(types.Buffer)
-  ), arguments)
-
-  if (types.Null(sequence)) {
-    sequence = Transaction.DEFAULT_SEQUENCE
-  }
-
-  // Add the input and return the input's index
-  return (this.ins.push({
-    hash: hash,
-    index: index,
-    script: scriptSig || EMPTY_SCRIPT,
-    sequence: sequence,
-    witness: EMPTY_WITNESS
-  }) - 1)
-}
-
-Transaction.prototype.addOutput = function (scriptPubKey, value) {
-  typeforce(types.tuple(types.Buffer, types.Satoshi), arguments)
-
-  // Add the output and return the output's index
-  return (this.outs.push({
-    script: scriptPubKey,
-    value: value
-  }) - 1)
-}
-
 Transaction.prototype.hasWitnesses = function () {
   return this.ins.some(function (x) {
     return x.witness.length !== 0
