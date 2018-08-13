@@ -157,35 +157,6 @@ function fromASM (asm) {
   }))
 }
 
-function isCanonicalPubKey (buffer) {
-  if (!Buffer.isBuffer(buffer)) return false
-  if (buffer.length < 33) return false
-
-  switch (buffer[0]) {
-    case 0x02:
-    case 0x03:
-      return buffer.length === 33
-    case 0x04:
-      return buffer.length === 65
-  }
-
-  return false
-}
-
-function isDefinedHashType (hashType) {
-  var hashTypeMod = hashType & ~0x80
-
-// return hashTypeMod > SIGHASH_ALL && hashTypeMod < SIGHASH_SINGLE
-  return hashTypeMod > 0x00 && hashTypeMod < 0x04
-}
-
-function isCanonicalSignature (buffer) {
-  if (!Buffer.isBuffer(buffer)) return false
-  if (!isDefinedHashType(buffer[buffer.length - 1])) return false
-
-  return bip66.check(buffer.slice(0, -1))
-}
-
 module.exports = {
   compile: compile,
   decompile: decompile,
@@ -193,8 +164,4 @@ module.exports = {
   toASM: toASM,
 
   number: require('./script_number'),
-
-  isCanonicalPubKey: isCanonicalPubKey,
-  isCanonicalSignature: isCanonicalSignature,
-  isDefinedHashType: isDefinedHashType
 }

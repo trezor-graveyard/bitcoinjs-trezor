@@ -8,19 +8,6 @@ var fixtures = require('./fixtures/script.json')
 var fixtures2 = require('./fixtures/templates.json')
 
 describe('script', function () {
-  // TODO
-  describe('isCanonicalPubKey', function () {
-    it('rejects if not provided a Buffer', function () {
-      assert.strictEqual(false, bscript.isCanonicalPubKey(0))
-    })
-    it('rejects smaller than 33', function () {
-      for (var i = 0; i < 33; i++) {
-        assert.strictEqual(false, bscript.isCanonicalPubKey(Buffer.from('', i)))
-      }
-    })
-  })
-  describe.skip('isCanonicalSignature', function () {})
-
   describe('fromASM/toASM', function () {
     fixtures.valid.forEach(function (f) {
       it('encodes/decodes ' + f.asm, function () {
