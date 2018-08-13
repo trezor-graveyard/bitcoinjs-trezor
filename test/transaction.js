@@ -169,7 +169,9 @@ describe('Transaction', function () {
       it('should return ' + f.coinbase + ' for ' + f.id + '(' + f.description + ')', function () {
         var tx = Transaction.fromHex(f.hex, false)
 
-        assert.strictEqual(tx.isCoinbase(), f.coinbase)
+        var isCoinbase = tx.ins.length === 1 && Transaction.isCoinbaseHash(tx.ins[0].hash)
+
+        assert.strictEqual(isCoinbase, f.coinbase)
       })
     }
 

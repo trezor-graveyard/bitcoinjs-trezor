@@ -252,17 +252,13 @@ Transaction.fromHex = function (hex, zcash) {
   return Transaction.fromBuffer(new Buffer(hex, 'hex'), zcash)
 }
 
+// used in coinbase detection
 Transaction.isCoinbaseHash = function (buffer) {
   typeforce(types.Hash256bit, buffer)
   for (var i = 0; i < 32; ++i) {
     if (buffer[i] !== 0) return false
   }
   return true
-}
-
-// used in coinbase detection
-Transaction.prototype.isCoinbase = function () {
-  return this.ins.length === 1 && Transaction.isCoinbaseHash(this.ins[0].hash)
 }
 
 // used in toHex/toBuffer
