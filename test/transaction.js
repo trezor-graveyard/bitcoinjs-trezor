@@ -54,8 +54,7 @@ describe('Transaction', function () {
         var witness = txIn.witness.map(function (x) {
           return Buffer.from(x, 'hex')
         })
-
-        tx.setWitness(i, witness)
+        tx.ins[i].witness = witness
       }
     })
 

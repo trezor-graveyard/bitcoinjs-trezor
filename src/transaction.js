@@ -334,7 +334,6 @@ Transaction.prototype.__byteLength = function (__allowWitness) {
   )
 }
 
-
 // used in webwallet on several places
 // and probably connect
 // Can probably be factored out
@@ -345,10 +344,12 @@ Transaction.prototype.getId = function () {
   return hash.reverse().toString('hex')
 }
 
+// used in toHex
 Transaction.prototype.toBuffer = function (buffer, initialOffset) {
   return this.__toBuffer(buffer, initialOffset, true)
 }
 
+// used in toHex
 Transaction.prototype.__toBuffer = function (buffer, initialOffset, __allowWitness) {
   if (!buffer) buffer = Buffer.allocUnsafe(this.__byteLength(__allowWitness))
 
@@ -461,14 +462,9 @@ Transaction.prototype.__toBuffer = function (buffer, initialOffset, __allowWitne
   return buffer
 }
 
+// used in many places
 Transaction.prototype.toHex = function () {
   return this.toBuffer().toString('hex')
-}
-
-Transaction.prototype.setInputScript = function (index, scriptSig) {
-  typeforce(types.tuple(types.Number, types.Buffer), arguments)
-
-  this.ins[index].script = scriptSig
 }
 
 Transaction.prototype.setWitness = function (index, witness) {
