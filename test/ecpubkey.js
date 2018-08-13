@@ -2,10 +2,8 @@
 /* eslint-disable no-new */
 
 var assert = require('assert')
-var proxyquire = require('proxyquire')
 var sinon = require('sinon')
 
-var BigInteger = require('bigi')
 var ECPubkey = require('../src/ecpubkey')
 
 var fixtures = require('./fixtures/ecpubkey.json')
@@ -75,7 +73,6 @@ describe('ECPubkey', function () {
     fixtures.valid.forEach(function (f) {
       it('returns ' + f.address + ' for ' + f.Q, function () {
         var Q = ecurve.Point.decodeFrom(curve, Buffer.from(f.Q, 'hex'))
-
 
         var keyPair = new ECPubkey(Q, {
           compressed: f.compressed,

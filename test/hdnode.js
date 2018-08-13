@@ -4,7 +4,6 @@
 var assert = require('assert')
 var sinon = require('sinon')
 
-var BigInteger = require('bigi')
 var ECPubkey = require('../src/ecpubkey')
 var HDNode = require('../src/hdnode')
 
@@ -68,12 +67,11 @@ describe('HDNode', function () {
   })
 
   describe('ECPubkey wrappers', function () {
-    var keyPair, hd, hash
+    var keyPair, hd
 
     beforeEach(function () {
       var Q = ecurve.Point.decodeFrom(curve, Buffer.from('0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798', 'hex'))
       keyPair = new ECPubkey(Q)
-      hash = Buffer.alloc(32)
 
       var chainCode = Buffer.alloc(32)
       hd = new HDNode(keyPair, chainCode)
@@ -123,7 +121,6 @@ describe('HDNode', function () {
     fixtures.valid.forEach(function (f) {
       var network = NETWORKS[f.network]
       var hd = HDNode.fromBase58(f.master.base58, network)
-      var master = hd
 
       // FIXME: test data is only testing Private -> private for now
       f.children.forEach(function (c) {
@@ -141,7 +138,7 @@ describe('HDNode', function () {
       })
     })
 
-   it('works for Public -> public', function () {
+    it('works for Public -> public', function () {
       var f = fixtures.valid[1]
       var c = f.children[0]
 

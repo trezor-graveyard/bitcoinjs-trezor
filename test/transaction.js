@@ -1,4 +1,4 @@
-/* global describe, it, beforeEach */
+/* global describe, it */
 
 var assert = require('assert')
 var bscript = require('../src/script')
@@ -14,7 +14,7 @@ describe('Transaction', function () {
     tx.version = raw.version
     tx.locktime = raw.locktime
 
-    function addInput(hash, index, sequence, scriptSig) {
+    function addInput (hash, index, sequence, scriptSig) {
       if (types.Null(sequence)) {
         sequence = Transaction.DEFAULT_SEQUENCE
       }
@@ -29,14 +29,13 @@ describe('Transaction', function () {
       }) - 1)
     }
 
-    function addOutput(scriptPubKey, value) {
+    function addOutput (scriptPubKey, value) {
       // Add the output and return the output's index
       return (tx.outs.push({
         script: scriptPubKey,
         value: value
       }) - 1)
     }
-
 
     raw.ins.forEach(function (txIn, i) {
       var txHash = Buffer.from(txIn.hash, 'hex')

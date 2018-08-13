@@ -1,4 +1,3 @@
-var decompile = require('../script').decompile
 var nullData = require('./nulldata')
 var pubKeyHash = require('./pubkeyhash')
 var scriptHash = require('./scripthash')

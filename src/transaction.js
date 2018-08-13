@@ -1,8 +1,6 @@
 var Buffer = require('safe-buffer').Buffer
 var bcrypto = require('./crypto')
-var bscript = require('./script')
 var bufferutils = require('./bufferutils')
-var opcodes = require('bitcoin-ops')
 var typeforce = require('typeforce')
 var types = require('./types')
 var varuint = require('varuint-bitcoin')
@@ -46,15 +44,7 @@ Transaction.SIGHASH_ANYONECANPAY = 0x80
 Transaction.ADVANCED_TRANSACTION_MARKER = 0x00
 Transaction.ADVANCED_TRANSACTION_FLAG = 0x01
 
-var EMPTY_SCRIPT = Buffer.allocUnsafe(0)
 var EMPTY_WITNESS = []
-var ZERO = Buffer.from('0000000000000000000000000000000000000000000000000000000000000000', 'hex')
-var ONE = Buffer.from('0000000000000000000000000000000000000000000000000000000000000001', 'hex')
-var VALUE_UINT64_MAX = Buffer.from('ffffffffffffffff', 'hex')
-var BLANK_OUTPUT = {
-  script: EMPTY_SCRIPT,
-  valueBuffer: VALUE_UINT64_MAX
-}
 
 Transaction.ZCASH_NUM_JS_INPUTS = 2
 Transaction.ZCASH_NUM_JS_OUTPUTS = 2

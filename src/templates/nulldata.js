@@ -30,7 +30,6 @@ function encode (data) {
   return bscript.compile([OPS.OP_RETURN, data])
 }
 
-
 module.exports = {
   output: {
     check: check,

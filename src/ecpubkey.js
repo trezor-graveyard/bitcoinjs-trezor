@@ -4,16 +4,10 @@
 
 var baddress = require('./address')
 var bcrypto = require('./crypto')
-var randomBytes = require('randombytes')
 var typeforce = require('typeforce')
 var types = require('./types')
-var wif = require('wif')
 
 var NETWORKS = require('./networks')
-var BigInteger = require('bigi')
-
-var ecurve = require('ecurve')
-var secp256k1 = ecurve.getCurveByName('secp256k1')
 
 function ECPubkey (Q, options) {
   if (options) {

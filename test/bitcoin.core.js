@@ -7,9 +7,6 @@ var bitcoin = require('../')
 var base58EncodeDecode = require('./fixtures/core/base58_encode_decode.json')
 var base58KeysInvalid = require('./fixtures/core/base58_keys_invalid.json')
 var base58KeysValid = require('./fixtures/core/base58_keys_valid.json')
-var sigCanonical = require('./fixtures/core/sig_canonical.json')
-var sigHash = require('./fixtures/core/sighash.json')
-var sigNoncanonical = require('./fixtures/core/sig_noncanonical.json')
 var txValid = require('./fixtures/core/tx_valid.json')
 
 describe('Bitcoin-core', function () {

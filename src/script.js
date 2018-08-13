@@ -1,5 +1,4 @@
 var Buffer = require('safe-buffer').Buffer
-var bip66 = require('bip66')
 var pushdata = require('pushdata-bitcoin')
 var typeforce = require('typeforce')
 var types = require('./types')
@@ -160,5 +159,5 @@ module.exports = {
   compile: compile,
   decompile: decompile,
   fromASM: fromASM,
-  toASM: toASM,
+  toASM: toASM
 }

@@ -4,15 +4,10 @@ var assert = require('assert')
 var bcrypto = require('../src/crypto')
 var bscript = require('../src/script')
 var btemplates = require('../src/templates')
-var ops = require('bitcoin-ops')
 
 var fixtures = require('./fixtures/templates.json')
 
-function fromHex (x) { return Buffer.from(x, 'hex') }
-function toHex (x) { return x.toString('hex') }
-
 describe('script-templates', function () {
-
   describe('checks nulldata correctly', function () {
     fixtures.valid.forEach(function (f) {
       if (!f.output) return
@@ -77,7 +72,6 @@ describe('script-templates', function () {
       })
     })
   })
-
 
   describe('witnessPubKeyHash.output', function () {
     fixtures.valid.forEach(function (f) {
