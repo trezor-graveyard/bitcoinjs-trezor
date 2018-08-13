@@ -107,6 +107,16 @@ describe('HDNode', function () {
     })
   })
 
+  describe('getIdentifier', function () {
+    validAll.forEach(function (f) {
+      it('returns the identifier for ' + f.fingerprint, function () {
+        var hd = HDNode.fromBase58(f.base58, NETWORKS_LIST)
+
+        assert.strictEqual(hd.getIdentifier().toString('hex'), f.identifier)
+      })
+    })
+  })
+
   describe('derive', function () {
     function verifyVector (hd, v) {
       assert.strictEqual(hd.toBase58(), v.base58)
@@ -116,6 +126,7 @@ describe('HDNode', function () {
       assert.strictEqual(hd.chainCode.toString('hex'), v.chainCode)
       assert.strictEqual(hd.depth, v.depth >>> 0)
       assert.strictEqual(hd.index, v.index >>> 0)
+      assert.strictEqual(hd.getIdentifier().toString('hex'), v.identifier)
     }
 
     fixtures.valid.forEach(function (f) {

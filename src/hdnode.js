@@ -202,4 +202,10 @@ HDNode.prototype.derive = function (index) {
   return hd
 }
 
+// used when directly accessing scripthash bytes
+// from derived HDNode
+HDNode.prototype.getIdentifier = function () {
+  return bcrypto.hash160(this.getPublicKeyBuffer())
+}
+
 module.exports = HDNode
