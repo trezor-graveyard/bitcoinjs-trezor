@@ -1,4 +1,4 @@
-/* @flow */
+/* @flow weak */
 
 export type Network = {
     bip32: {
@@ -25,62 +25,61 @@ export type Input = {
 
 type Stack = Array<Buffer | number>;
 
-export interface address {
-    static fromBase58Check(address: string): {hash: Buffer, version: number};
-    static fromBech32(address: string): {data: Buffer, version: number, prefix: string};
-    static fromOutputScript(script: Buffer, network?: Network): string;
-    static toBase58Check(hash: Buffer, version: number): string;
-    static toOutputScript(address: string, network?: Network): Buffer;
+export class address {
+    static fromBase58Check(address: string): {hash: Buffer, version: number} {throw 1};
+    static fromBech32(address: string): {data: Buffer, version: number, prefix: string} {throw 1};
+    static fromOutputScript(script: Buffer, network?: Network): string {throw 1};
+    static toBase58Check(hash: Buffer, version: number): string {throw 1};
+    static toOutputScript(address: string, network?: Network): Buffer {throw 1};
 };
 
-export interface HDNode {
+export class HDNode {
     depth: number;
     parentFingerprint: number;
     index: number;
-    getPublicKeyBuffer(): Buffer;
-    setNetwork(network: Network): void;
     chainCode: Buffer;
+    getPublicKeyBuffer(): Buffer {throw 1}
+    setNetwork(network: Network): void {throw 1}
     static fromBase58(
         str: string,
         networks: ?(Array<Network> | Network)
-    ): HDNode;
-    derive(index: number): HDNode;
-    derivePath(path: string): HDNode;
-    toBase58(): string;
-    getAddress(): string;
-    getIdentifier(): Buffer;
+    ): HDNode {throw 1}
+    derive(index: number): HDNode {throw 1}
+    derivePath(path: string): HDNode {throw 1}
+    toBase58(): string {throw 1}
+    getAddress(): string {throw 1}
+    getIdentifier(): Buffer {throw 1}
 
-    static fromBase58(base: string, network?: ?(Network | Array<Network>)): HDNode;
+    static fromBase58(base: string, network?: ?(Network | Array<Network>)): HDNode {throw 1}
 
-    static fromInternal(chainCode: Buffer, publicKey: Buffer, network: Network, depth: number, index: number, parentFingerprint: number): HDNode; 
+    static fromInternal(chainCode: Buffer, publicKey: Buffer, network: Network, depth: number, index: number, parentFingerprint: number): HDNode {throw 1}
 }
 
-export interface Transaction {
+export class Transaction {
     version: number;
     locktime: number;
     ins: Array<Input>;
     outs: Array<Output>;
-
-    constructor(): void;
-    static fromHex(hex: string, zcash?: boolean): Transaction;
-    toBuffer(): Buffer;
-    toHex(): string;
-    getId(): string;
-
-    static isCoinbaseHash(buffer: Buffer): boolean;
-    byteLength(): number;
-    __byteLength(witness: boolean): number;
-
-    joinsplitByteLength(): number;
     joinsplits: Array<any>;
+
+    toBuffer(): Buffer {throw 1}
+    toHex(): string {throw 1}
+    getId(): string {throw 1}
+
+    byteLength(): number {throw 1}
+    __byteLength(witness: boolean): number {throw 1}
+    joinsplitByteLength(): number {throw 1}
+
+    static fromHex(hex: string, zcash?: boolean): Transaction {throw 1}
+    static isCoinbaseHash(buffer: Buffer): boolean {throw 1}
 }
 
-export interface crypto {
-    static hash256(buffer: Buffer): Buffer;
-    static hash160(buffer: Buffer): Buffer;
+export class crypto {
+    static hash256(buffer: Buffer): Buffer {throw 1}
+    static hash160(buffer: Buffer): Buffer {throw 1}
 }
 
-export interface script {
+export class script {
   static scriptHash: {
     output: {
       encode: (scriptHash: Buffer) => Buffer;
