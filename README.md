@@ -1,11 +1,7 @@
-This is a fork of https://github.com/bitcoinjs/bitcoinjs-lib with very simple support for zcash (parsing transactions + multibyte addresses).
+This is a fork of https://github.com/bitcoinjs/bitcoinjs-lib , but implements just a subset of its features.
 
-You should not use this if you don't have to support zcash, since it's not as well maintained and tested as bitcoin.js.
+Unlike bitcoinjs-lib, it wants to support all the bitcoin-like altcoins. Unlike bitcoinjs-lib, it includes only subset of its features (that we need in Trezor web services) and the rest of the code is deleted.
 
-Read README at original bitcoinjs-lib
-
-## versions
-
-Version 3.3.2 is rebased on upstream 3.3.2
+TODO: add tests for zcash and dogecoin
 
 ## LICENSE [MIT](LICENSE)
