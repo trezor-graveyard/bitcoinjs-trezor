@@ -16,12 +16,12 @@ var curve = ecurve.getCurveByName('secp256k1')
 // of HD Nodes in this object
 // However, we also often use emscripten and webworker
 // code to make derivations faster
-function HDNode (keyPair, chainCode) {
+function HDNode (pubkey, chainCode) {
   typeforce(types.tuple('ECPubkey', types.Buffer256bit), arguments)
 
-  if (!keyPair.compressed) throw new TypeError('BIP32 only allows compressed keyPairs')
+  if (!pubkey.compressed) throw new TypeError('BIP32 only allows compressed pubkeys')
 
-  this.keyPair = keyPair
+  this.pubkey = pubkey
   this.chainCode = chainCode
   this.depth = 0
   this.index = 0
@@ -78,9 +78,9 @@ HDNode.fromBase58 = function (string, networks) {
   var Q = ecurve.Point.decodeFrom(curve, buffer.slice(45, 78))
   // Q.compressed is assumed, if somehow this assumption is broken, `new HDNode` will throw
 
-  var keyPair = new ECPubkey(Q, { network: network })
+  var pubkey = new ECPubkey(Q, { network: network })
 
-  var hd = new HDNode(keyPair, chainCode)
+  var hd = new HDNode(pubkey, chainCode)
   hd.depth = depth
   hd.index = index
   hd.parentFingerprint = parentFingerprint
@@ -92,8 +92,8 @@ HDNode.fromBase58 = function (string, networks) {
 // (faster than parsing xpub)
 HDNode.prototype.fromInternal = function (chainCode, publicKey, network, depth, index, parentFingerprint) {
   var Q = ecurve.Point.decodeFrom(curve, publicKey)
-  var keyPair = new ECPubkey(Q, {network: network})
-  var node = new HDNode(keyPair, chainCode)
+  var pubkey = new ECPubkey(Q, {network: network})
+  var node = new HDNode(pubkey, chainCode)
   node.depth = depth
   node.index = index
   node.parentFingerprint = parentFingerprint
@@ -102,25 +102,25 @@ HDNode.prototype.fromInternal = function (chainCode, publicKey, network, depth, 
 
 // used in hd-wallet if we dont have emscripten
 HDNode.prototype.getAddress = function () {
-  return this.keyPair.getAddress()
+  return this.pubkey.getAddress()
 }
 
 // used when we change xpub prefix
 // and we want to export the xpub as string
 HDNode.prototype.setNetwork = function (network) {
-  this.keyPair.network = network
+  this.pubkey.network = network
 }
 
 // used for sending HDNode data to emscripten worker
 // (we need pure JS object)
 HDNode.prototype.getPublicKeyBuffer = function () {
-  return this.keyPair.getPublicKeyBuffer()
+  return this.pubkey.getPublicKeyBuffer()
 }
 
 // maybe used in hd-wallet if we dont have emscripten
 HDNode.prototype.toBase58 = function () {
   // Version
-  var network = this.keyPair.network
+  var network = this.pubkey.network
   var version = network.bip32.public
   var buffer = Buffer.allocUnsafe(78)
 
@@ -142,7 +142,7 @@ HDNode.prototype.toBase58 = function () {
 
   // 33 bytes: the public key or private key data
   // X9.62 encoding for public keys
-  this.keyPair.getPublicKeyBuffer().copy(buffer, 45)
+  this.pubkey.getPublicKeyBuffer().copy(buffer, 45)
 
   return base58check.encode(buffer)
 }
@@ -161,7 +161,7 @@ HDNode.prototype.derive = function (index) {
 
   // data = serP(point(kpar)) || ser32(index)
   //      = serP(Kpar) || ser32(index)
-  this.keyPair.getPublicKeyBuffer().copy(data, 0)
+  this.pubkey.getPublicKeyBuffer().copy(data, 0)
   data.writeUInt32BE(index, 33)
 
   var I = createHmac('sha512', this.chainCode).update(data).digest()
@@ -176,25 +176,25 @@ HDNode.prototype.derive = function (index) {
   }
 
   // Private parent key -> private child key
-  var derivedKeyPair
+  var derivedPubkey
   // Ki = point(parse256(IL)) + Kpar
   //    = G*IL + Kpar
-  var Ki = curve.G.multiply(pIL).add(this.keyPair.Q)
+  var Ki = curve.G.multiply(pIL).add(this.pubkey.Q)
 
   // In case Ki is the point at infinity, proceed with the next value for i
   if (curve.isInfinity(Ki)) {
     return this.derive(index + 1)
   }
 
-  derivedKeyPair = new ECPubkey(Ki, {
-    network: this.keyPair.network
+  derivedPubkey = new ECPubkey(Ki, {
+    network: this.pubkey.network
   })
 
-  var hd = new HDNode(derivedKeyPair, IR)
+  var hd = new HDNode(derivedPubkey, IR)
   hd.depth = this.depth + 1
   hd.index = index
 
-  var identifier = bcrypto.hash160(this.keyPair.getPublicKeyBuffer())
+  var identifier = bcrypto.hash160(this.pubkey.getPublicKeyBuffer())
   var fingerprint = identifier.slice(0, 4)
 
   hd.parentFingerprint = fingerprint.readUInt32BE(0)

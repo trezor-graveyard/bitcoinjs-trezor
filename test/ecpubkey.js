@@ -21,26 +21,26 @@ var dQ = ecurve.Point.decodeFrom(curve, Buffer.from(dfQ, 'hex'))
 describe('ECPubkey', function () {
   describe('constructor', function () {
     it('defaults to compressed', function () {
-      var keyPair = new ECPubkey(dQ)
+      var pubkey = new ECPubkey(dQ)
 
-      assert.strictEqual(keyPair.compressed, true)
+      assert.strictEqual(pubkey.compressed, true)
     })
 
     it('supports the uncompressed option', function () {
-      var keyPair = new ECPubkey(dQ, {
+      var pubkey = new ECPubkey(dQ, {
         compressed: false
       })
 
-      assert.strictEqual(keyPair.compressed, false)
+      assert.strictEqual(pubkey.compressed, false)
     })
 
     it('supports the network option', function () {
-      var keyPair = new ECPubkey(dQ, {
+      var pubkey = new ECPubkey(dQ, {
         compressed: false,
         network: NETWORKS.testnet
       })
 
-      assert.strictEqual(keyPair.network, NETWORKS.testnet)
+      assert.strictEqual(pubkey.network, NETWORKS.testnet)
     })
 
     fixtures.invalid.constructor.forEach(function (f) {
@@ -55,17 +55,17 @@ describe('ECPubkey', function () {
   })
 
   describe('getPublicKeyBuffer', function () {
-    var keyPair
+    var pubkey 
 
     beforeEach(function () {
-      keyPair = new ECPubkey(dQ)
+      pubkey = new ECPubkey(dQ)
     })
 
     it('wraps Q.getEncoded', sinon.test(function () {
-      this.mock(keyPair.Q).expects('getEncoded')
-        .once().withArgs(keyPair.compressed)
+      this.mock(pubkey.Q).expects('getEncoded')
+        .once().withArgs(pubkey.compressed)
 
-      keyPair.getPublicKeyBuffer()
+      pubkey.getPublicKeyBuffer()
     }))
   })
 
@@ -74,12 +74,12 @@ describe('ECPubkey', function () {
       it('returns ' + f.address + ' for ' + f.Q, function () {
         var Q = ecurve.Point.decodeFrom(curve, Buffer.from(f.Q, 'hex'))
 
-        var keyPair = new ECPubkey(Q, {
+        var pubkey = new ECPubkey(Q, {
           compressed: f.compressed,
           network: NETWORKS[f.network]
         })
 
-        assert.strictEqual(keyPair.getAddress(), f.address)
+        assert.strictEqual(pubkey.getAddress(), f.address)
       })
     })
   })

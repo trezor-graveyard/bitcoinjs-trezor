@@ -29,57 +29,57 @@ fixtures.valid.forEach(function (f) {
 
 describe('HDNode', function () {
   describe('Constructor', function () {
-    var keyPair, chainCode
+    var pubkey, chainCode
 
     beforeEach(function () {
       var Q = ecurve.Point.decodeFrom(curve, Buffer.from('0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798', 'hex'))
-      keyPair = new ECPubkey(Q)
+      pubkey = new ECPubkey(Q)
       chainCode = Buffer.alloc(32, 1)
     })
 
-    it('stores the keyPair/chainCode directly', function () {
-      var hd = new HDNode(keyPair, chainCode)
+    it('stores the pubkey/chainCode directly', function () {
+      var hd = new HDNode(pubkey, chainCode)
 
-      assert.strictEqual(hd.keyPair, keyPair)
+      assert.strictEqual(hd.pubkey, pubkey)
       assert.strictEqual(hd.chainCode, chainCode)
     })
 
     it('has a default depth/index of 0', function () {
-      var hd = new HDNode(keyPair, chainCode)
+      var hd = new HDNode(pubkey, chainCode)
 
       assert.strictEqual(hd.depth, 0)
       assert.strictEqual(hd.index, 0)
     })
 
-    it('throws on uncompressed keyPair', function () {
-      keyPair.compressed = false
+    it('throws on uncompressed pubkey', function () {
+      pubkey.compressed = false
 
       assert.throws(function () {
-        new HDNode(keyPair, chainCode)
-      }, /BIP32 only allows compressed keyPairs/)
+        new HDNode(pubkey, chainCode)
+      }, /BIP32 only allows compressed pubkeys/)
     })
 
     it('throws when an invalid length chain code is given', function () {
       assert.throws(function () {
-        new HDNode(keyPair, Buffer.alloc(20))
+        new HDNode(pubkey, Buffer.alloc(20))
       }, /Expected property "1" of type Buffer\(Length: 32\), got Buffer\(Length: 20\)/)
     })
   })
 
   describe('ECPubkey wrappers', function () {
-    var keyPair, hd
+    var pubkey, hd
 
     beforeEach(function () {
       var Q = ecurve.Point.decodeFrom(curve, Buffer.from('0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798', 'hex'))
-      keyPair = new ECPubkey(Q)
+      pubkey = new ECPubkey(Q)
 
       var chainCode = Buffer.alloc(32)
-      hd = new HDNode(keyPair, chainCode)
+      hd = new HDNode(pubkey, chainCode)
     })
 
     describe('getAddress', function () {
-      it('wraps keyPair.getAddress', sinon.test(function () {
-        this.mock(keyPair).expects('getAddress')
+      it('wraps pubkey.getAddress', sinon.test(function () {
+        this.mock(pubkey).expects('getAddress')
           .once().withArgs().returns('foobar')
 
         assert.strictEqual(hd.getAddress(), 'foobar')
@@ -122,7 +122,7 @@ describe('HDNode', function () {
       assert.strictEqual(hd.toBase58(), v.base58)
 
       assert.strictEqual(hd.getAddress(), v.address)
-      assert.strictEqual(hd.keyPair.getPublicKeyBuffer().toString('hex'), v.pubKey)
+      assert.strictEqual(hd.pubkey.getPublicKeyBuffer().toString('hex'), v.pubKey)
       assert.strictEqual(hd.chainCode.toString('hex'), v.chainCode)
       assert.strictEqual(hd.depth, v.depth >>> 0)
       assert.strictEqual(hd.index, v.index >>> 0)
