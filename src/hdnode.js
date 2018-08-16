@@ -90,7 +90,7 @@ HDNode.fromBase58 = function (string, networks) {
 
 // used in conversion from trezor result to HDNode
 // (faster than parsing xpub)
-HDNode.prototype.fromInternal = function (chainCode, publicKey, network, depth, index, parentFingerprint) {
+HDNode.fromInternal = function (chainCode, publicKey, network, depth, index, parentFingerprint) {
   var Q = ecurve.Point.decodeFrom(curve, publicKey)
   var pubkey = new ECPubkey(Q, {network: network})
   var node = new HDNode(pubkey, chainCode)

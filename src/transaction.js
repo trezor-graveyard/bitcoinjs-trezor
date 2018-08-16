@@ -27,9 +27,9 @@ function Transaction (zcash) {
   this.locktime = 0
   this.ins = []
   this.outs = []
+  this.joinsplits = []
   if (zcash) {
     this.version = 3
-    this.joinsplits = []
     this.versionGroupId = '0x03c48270'
     this.expiry = 0
   }
