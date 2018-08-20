@@ -1,0 +1,56 @@
+{
+  "valid": [
+    {
+      "Q": "0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+      "compressed": true,
+      "network": "bitcoin",
+      "address": "1BgGZ9tcN4rm9KBzDn7KprQz87SZ26SAMH"
+    },
+    {
+      "Q": "0479be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8",
+      "compressed": false,
+      "network": "bitcoin",
+      "address": "1EHNa6Q4Jz2uvNExL497mE43ikXhwF6kZm"
+    },
+    {
+      "Q": "02b80011a883a0fd621ad46dfc405df1e74bf075cbaf700fd4aebef6e96f848340",
+      "compressed": true,
+      "network": "bitcoin",
+      "address": "1MasfEKgSiaSeri2C6kgznaqBNtyrZPhNq"
+    },
+    {
+      "Q": "024289801366bcee6172b771cf5a7f13aaecd237a0b9a1ff9d769cabc2e6b70a34",
+      "compressed": true,
+      "network": "bitcoin",
+      "address": "1LwwMWdSEMHJ2dMhSvAHZ3g95tG2UBv9jg"
+    },
+    {
+      "Q": "044289801366bcee6172b771cf5a7f13aaecd237a0b9a1ff9d769cabc2e6b70a34cec320a0565fb7caf11b1ca2f445f9b7b012dda5718b3cface369ee3a034ded6",
+      "compressed": false,
+      "network": "bitcoin",
+      "address": "1zXcfvKCLgsFdJDYPuqpu1sF3q92tnnUM"
+    },
+    {
+      "Q": "024289801366bcee6172b771cf5a7f13aaecd237a0b9a1ff9d769cabc2e6b70a34",
+      "compressed": true,
+      "network": "testnet",
+      "address": "n1TteZiR3NiYojqKAV8fNxtTwsrjM7kVdj"
+    },
+    {
+      "Q": "044289801366bcee6172b771cf5a7f13aaecd237a0b9a1ff9d769cabc2e6b70a34cec320a0565fb7caf11b1ca2f445f9b7b012dda5718b3cface369ee3a034ded6",
+      "compressed": false,
+      "network": "testnet",
+      "address": "mgWUuj1J1N882jmqFxtDepEC73Rr22E9GU"
+    },
+    {
+      "Q": "0379be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+      "compressed": true,
+      "network": "bitcoin",
+      "address": "1GrLCmVQXoyJXaPJQdqssNqwxvha1eUo2E"
+    }
+  ],
+  "invalid": {
+    "constructor": [
+    ]
+  }
+}

@@ -8,19 +8,6 @@ var fixtures = require('./fixtures/script.json')
 var fixtures2 = require('./fixtures/templates.json')
 
 describe('script', function () {
-  // TODO
-  describe('isCanonicalPubKey', function () {
-    it('rejects if not provided a Buffer', function () {
-      assert.strictEqual(false, bscript.isCanonicalPubKey(0))
-    })
-    it('rejects smaller than 33', function () {
-      for (var i = 0; i < 33; i++) {
-        assert.strictEqual(false, bscript.isCanonicalPubKey(Buffer.from('', i)))
-      }
-    })
-  })
-  describe.skip('isCanonicalSignature', function () {})
-
   describe('fromASM/toASM', function () {
     fixtures.valid.forEach(function (f) {
       it('encodes/decodes ' + f.asm, function () {
@@ -40,16 +27,6 @@ describe('script', function () {
 
   describe('fromASM/toASM (templates)', function () {
     fixtures2.valid.forEach(function (f) {
-      if (f.inputHex) {
-        var ih = bscript.toASM(Buffer.from(f.inputHex, 'hex'))
-
-        it('encodes/decodes ' + ih, function () {
-          var script = bscript.fromASM(f.input)
-          assert.strictEqual(script.toString('hex'), f.inputHex)
-          assert.strictEqual(bscript.toASM(script), f.input)
-        })
-      }
-
       if (f.outputHex) {
         it('encodes/decodes ' + f.output, function () {
           var script = bscript.fromASM(f.output)
@@ -57,34 +34,6 @@ describe('script', function () {
           assert.strictEqual(bscript.toASM(script), f.output)
         })
       }
-    })
-  })
-
-  describe('isPushOnly', function () {
-    fixtures.valid.forEach(function (f) {
-      it('returns ' + !!f.stack + ' for ' + f.asm, function () {
-        var script = bscript.fromASM(f.asm)
-        var chunks = bscript.decompile(script)
-
-        assert.strictEqual(bscript.isPushOnly(chunks), !!f.stack)
-      })
-    })
-  })
-
-  describe('toStack', function () {
-    fixtures.valid.forEach(function (f) {
-      it('returns ' + !!f.stack + ' for ' + f.asm, function () {
-        if (!f.stack || !f.asm) return
-
-        var script = bscript.fromASM(f.asm)
-
-        var stack = bscript.toStack(script)
-        assert.deepEqual(stack.map(function (x) {
-          return x.toString('hex')
-        }), f.stack)
-
-        assert.equal(bscript.toASM(bscript.compile(stack)), f.asm, 'should rebuild same script from stack')
-      })
     })
   })
 

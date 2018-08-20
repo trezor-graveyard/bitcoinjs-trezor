@@ -1,29 +1,13 @@
 var Buffer = require('safe-buffer').Buffer
-var bip66 = require('bip66')
 var pushdata = require('pushdata-bitcoin')
 var typeforce = require('typeforce')
 var types = require('./types')
-var scriptNumber = require('./script_number')
 
 var OPS = require('bitcoin-ops')
 var REVERSE_OPS = require('bitcoin-ops/map')
 var OP_INT_BASE = OPS.OP_RESERVED // OP_1 - 1
 
-function isOPInt (value) {
-  return types.Number(value) &&
-    ((value === OPS.OP_0) ||
-    (value >= OPS.OP_1 && value <= OPS.OP_16) ||
-    (value === OPS.OP_1NEGATE))
-}
-
-function isPushOnlyChunk (value) {
-  return types.Buffer(value) || isOPInt(value)
-}
-
-function isPushOnly (value) {
-  return types.Array(value) && value.every(isPushOnlyChunk)
-}
-
+// used in script.compile
 function asMinimalOP (buffer) {
   if (buffer.length === 0) return OPS.OP_0
   if (buffer.length !== 1) return
@@ -31,6 +15,11 @@ function asMinimalOP (buffer) {
   if (buffer[0] === 0x81) return OPS.OP_1NEGATE
 }
 
+// used everywhere, where we convert
+// type "OP_something BUFFER OP_something"
+// to buffer of hexa data
+//
+// It could probably be refactored away, but that would take time
 function compile (chunks) {
   // TODO: remove me
   if (Buffer.isBuffer(chunks)) return chunks
@@ -81,6 +70,11 @@ function compile (chunks) {
   return buffer
 }
 
+// used everywhere, where we convert
+// buffer of hexa data
+// to type "OP_something BUFFER OP_something"
+//
+// It could probably be refactored away, but that would take time
 function decompile (buffer) {
   // TODO: remove me
   if (types.Array(buffer)) return buffer
@@ -126,6 +120,8 @@ function decompile (buffer) {
   return chunks
 }
 
+// ASM is the string representation of chunk format
+// used in tests, too muc work to remove it now
 function toASM (chunks) {
   if (Buffer.isBuffer(chunks)) {
     chunks = decompile(chunks)
@@ -144,6 +140,8 @@ function toASM (chunks) {
   }).join(' ')
 }
 
+// ASM is the string representation of chunk format
+// used in tests, too muc work to remove it now
 function fromASM (asm) {
   typeforce(types.String, asm)
 
@@ -157,58 +155,9 @@ function fromASM (asm) {
   }))
 }
 
-function toStack (chunks) {
-  chunks = decompile(chunks)
-  typeforce(isPushOnly, chunks)
-
-  return chunks.map(function (op) {
-    if (Buffer.isBuffer(op)) return op
-    if (op === OPS.OP_0) return Buffer.allocUnsafe(0)
-
-    return scriptNumber.encode(op - OP_INT_BASE)
-  })
-}
-
-function isCanonicalPubKey (buffer) {
-  if (!Buffer.isBuffer(buffer)) return false
-  if (buffer.length < 33) return false
-
-  switch (buffer[0]) {
-    case 0x02:
-    case 0x03:
-      return buffer.length === 33
-    case 0x04:
-      return buffer.length === 65
-  }
-
-  return false
-}
-
-function isDefinedHashType (hashType) {
-  var hashTypeMod = hashType & ~0x80
-
-// return hashTypeMod > SIGHASH_ALL && hashTypeMod < SIGHASH_SINGLE
-  return hashTypeMod > 0x00 && hashTypeMod < 0x04
-}
-
-function isCanonicalSignature (buffer) {
-  if (!Buffer.isBuffer(buffer)) return false
-  if (!isDefinedHashType(buffer[buffer.length - 1])) return false
-
-  return bip66.check(buffer.slice(0, -1))
-}
-
 module.exports = {
   compile: compile,
   decompile: decompile,
   fromASM: fromASM,
-  toASM: toASM,
-  toStack: toStack,
-
-  number: require('./script_number'),
-
-  isCanonicalPubKey: isCanonicalPubKey,
-  isCanonicalSignature: isCanonicalSignature,
-  isPushOnly: isPushOnly,
-  isDefinedHashType: isDefinedHashType
+  toASM: toASM
 }

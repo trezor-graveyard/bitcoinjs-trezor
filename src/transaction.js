@@ -1,18 +1,18 @@
 var Buffer = require('safe-buffer').Buffer
 var bcrypto = require('./crypto')
-var bscript = require('./script')
 var bufferutils = require('./bufferutils')
-var opcodes = require('bitcoin-ops')
 var typeforce = require('typeforce')
 var types = require('./types')
 var varuint = require('varuint-bitcoin')
 
+// functions for reading bitcoin types
 function varSliceSize (someScript) {
   var length = someScript.length
 
   return varuint.encodingLength(length) + length
 }
 
+// functions for reading bitcoin types
 function vectorSize (someVector) {
   var length = someVector.length
 
@@ -21,19 +21,19 @@ function vectorSize (someVector) {
   }, 0)
 }
 
-function Transaction () {
+function Transaction (zcash) {
+  typeforce('Boolean', zcash)
   this.version = 1
   this.locktime = 0
   this.ins = []
   this.outs = []
   this.joinsplits = []
-}
-
-Transaction.prototype.setOverwinter = function (expiry, versionGroupId, version) {
-  this.zcash = true;
-  this.version = Math.max((version||3), 3);
-  this.versionGroupId=(versionGroupId||0x03c48270);
-  this.expiry=(expiry||0);
+  if (zcash) {
+    this.version = 3
+    this.versionGroupId = '0x03c48270'
+    this.expiry = 0
+  }
+  this.zcash = zcash
 }
 
 Transaction.DEFAULT_SEQUENCE = 0xffffffff
@@ -44,15 +44,7 @@ Transaction.SIGHASH_ANYONECANPAY = 0x80
 Transaction.ADVANCED_TRANSACTION_MARKER = 0x00
 Transaction.ADVANCED_TRANSACTION_FLAG = 0x01
 
-var EMPTY_SCRIPT = Buffer.allocUnsafe(0)
 var EMPTY_WITNESS = []
-var ZERO = Buffer.from('0000000000000000000000000000000000000000000000000000000000000000', 'hex')
-var ONE = Buffer.from('0000000000000000000000000000000000000000000000000000000000000001', 'hex')
-var VALUE_UINT64_MAX = Buffer.from('ffffffffffffffff', 'hex')
-var BLANK_OUTPUT = {
-  script: EMPTY_SCRIPT,
-  valueBuffer: VALUE_UINT64_MAX
-}
 
 Transaction.ZCASH_NUM_JS_INPUTS = 2
 Transaction.ZCASH_NUM_JS_OUTPUTS = 2
@@ -61,7 +53,9 @@ Transaction.ZCASH_NOTECIPHERTEXT_SIZE = 1 + 8 + 32 + 32 + 512 + 16
 Transaction.ZCASH_G1_PREFIX_MASK = 0x02
 Transaction.ZCASH_G2_PREFIX_MASK = 0x0a
 
+// used in any transaction parsings
 Transaction.fromBuffer = function (buffer, zcash, __noStrict) {
+  typeforce('Boolean', zcash)
   var offset = 0
   function readSlice (n) {
     offset += n
@@ -127,7 +121,7 @@ Transaction.fromBuffer = function (buffer, zcash, __noStrict) {
     }
   }
 
-  var tx = new Transaction()
+  var tx = new Transaction(zcash)
 
   if (zcash) {
       var header = readUInt32()
@@ -252,10 +246,13 @@ Transaction.fromBuffer = function (buffer, zcash, __noStrict) {
   return tx
 }
 
+// used in any transaction parsings
 Transaction.fromHex = function (hex, zcash) {
+  typeforce('Boolean', zcash)
   return Transaction.fromBuffer(new Buffer(hex, 'hex'), zcash)
 }
 
+// used in coinbase detection
 Transaction.isCoinbaseHash = function (buffer) {
   typeforce(types.Hash256bit, buffer)
   for (var i = 0; i < 32; ++i) {
@@ -264,62 +261,22 @@ Transaction.isCoinbaseHash = function (buffer) {
   return true
 }
 
-Transaction.prototype.isCoinbase = function () {
-  return this.ins.length === 1 && Transaction.isCoinbaseHash(this.ins[0].hash)
-}
-
-Transaction.prototype.addInput = function (hash, index, sequence, scriptSig) {
-  typeforce(types.tuple(
-    types.Hash256bit,
-    types.UInt32,
-    types.maybe(types.UInt32),
-    types.maybe(types.Buffer)
-  ), arguments)
-
-  if (types.Null(sequence)) {
-    sequence = Transaction.DEFAULT_SEQUENCE
-  }
-
-  // Add the input and return the input's index
-  return (this.ins.push({
-    hash: hash,
-    index: index,
-    script: scriptSig || EMPTY_SCRIPT,
-    sequence: sequence,
-    witness: EMPTY_WITNESS
-  }) - 1)
-}
-
-Transaction.prototype.addOutput = function (scriptPubKey, value) {
-  typeforce(types.tuple(types.Buffer, types.Satoshi), arguments)
-
-  // Add the output and return the output's index
-  return (this.outs.push({
-    script: scriptPubKey,
-    value: value
-  }) - 1)
-}
-
+// used in toHex/toBuffer
 Transaction.prototype.hasWitnesses = function () {
   return this.ins.some(function (x) {
     return x.witness.length !== 0
   })
 }
 
-Transaction.prototype.weight = function () {
-  var base = this.__byteLength(false)
-  var total = this.__byteLength(true)
-  return base * 3 + total
-}
-
-Transaction.prototype.virtualSize = function () {
-  return Math.ceil(this.weight() / 4)
-}
-
+// we are saving both actual tx length and
+// virtual tx length; virtual comes from backend,
+// we need to compute actual
 Transaction.prototype.byteLength = function () {
   return this.__byteLength(true)
 }
 
+// we need to know joinsplit bytelength
+// to tell the size to trezor before
 Transaction.prototype.joinsplitByteLength = function () {
   if (this.version < 2) {
     return 0
@@ -359,212 +316,26 @@ Transaction.prototype.__byteLength = function (__allowWitness) {
     this.outs.reduce(function (sum, output) { return sum + 8 + varSliceSize(output.script) }, 0) +
     (hasWitnesses ? this.ins.reduce(function (sum, input) { return sum + vectorSize(input.witness) }, 0) : 0) +
     this.joinsplitByteLength() +
-    (this.versionGroupId == null ? 0 : 4) +
-    (this.expiry == null ? 0 : 4)
+    (this.version === 3 ? 8 : 0)
   )
 }
 
-Transaction.prototype.clone = function () {
-  var newTx = new Transaction()
-  newTx.version = this.version
-  newTx.locktime = this.locktime
-  newTx.zcash = this.zcash
-  if (newTx.zcash) {
-    newTx.versionGroupId = this.versionGroupId
-    newTx.expiry = this.expiry
-  }
-  newTx.ins = this.ins.map(function (txIn) {
-    return {
-      hash: txIn.hash,
-      index: txIn.index,
-      script: txIn.script,
-      sequence: txIn.sequence,
-      witness: txIn.witness
-    }
-  })
-
-  newTx.outs = this.outs.map(function (txOut) {
-    return {
-      script: txOut.script,
-      value: txOut.value
-    }
-  })
-
-  return newTx
-}
-
-/**
- * Hash transaction for signing a specific input.
- *
- * Bitcoin uses a different hash for each signed transaction input.
- * This method copies the transaction, makes the necessary changes based on the
- * hashType, and then hashes the result.
- * This hash can then be used to sign the provided transaction input.
- */
-Transaction.prototype.hashForSignature = function (inIndex, prevOutScript, hashType) {
-  typeforce(types.tuple(types.UInt32, types.Buffer, /* types.UInt8 */ types.Number), arguments)
-
-  // https://github.com/bitcoin/bitcoin/blob/master/src/test/sighash_tests.cpp#L29
-  if (inIndex >= this.ins.length) return ONE
-
-  // ignore OP_CODESEPARATOR
-  var ourScript = bscript.compile(bscript.decompile(prevOutScript).filter(function (x) {
-    return x !== opcodes.OP_CODESEPARATOR
-  }))
-
-  var txTmp = this.clone()
-
-  // SIGHASH_NONE: ignore all outputs? (wildcard payee)
-  if ((hashType & 0x1f) === Transaction.SIGHASH_NONE) {
-    txTmp.outs = []
-
-    // ignore sequence numbers (except at inIndex)
-    txTmp.ins.forEach(function (input, i) {
-      if (i === inIndex) return
-
-      input.sequence = 0
-    })
-
-  // SIGHASH_SINGLE: ignore all outputs, except at the same index?
-  } else if ((hashType & 0x1f) === Transaction.SIGHASH_SINGLE) {
-    // https://github.com/bitcoin/bitcoin/blob/master/src/test/sighash_tests.cpp#L60
-    if (inIndex >= this.outs.length) return ONE
-
-    // truncate outputs after
-    txTmp.outs.length = inIndex + 1
-
-    // "blank" outputs before
-    for (var i = 0; i < inIndex; i++) {
-      txTmp.outs[i] = BLANK_OUTPUT
-    }
-
-    // ignore sequence numbers (except at inIndex)
-    txTmp.ins.forEach(function (input, y) {
-      if (y === inIndex) return
-
-      input.sequence = 0
-    })
-  }
-
-  // SIGHASH_ANYONECANPAY: ignore inputs entirely?
-  if (hashType & Transaction.SIGHASH_ANYONECANPAY) {
-    txTmp.ins = [txTmp.ins[inIndex]]
-    txTmp.ins[0].script = ourScript
-
-  // SIGHASH_ALL: only ignore input scripts
-  } else {
-    // "blank" others input scripts
-    txTmp.ins.forEach(function (input) { input.script = EMPTY_SCRIPT })
-    txTmp.ins[inIndex].script = ourScript
-  }
-
-  // serialize and hash
-  var buffer = Buffer.allocUnsafe(txTmp.__byteLength(false) + 4)
-  buffer.writeInt32LE(hashType, buffer.length - 4)
-  txTmp.__toBuffer(buffer, 0, false)
-
-  return bcrypto.hash256(buffer)
-}
-
-Transaction.prototype.hashForWitnessV0 = function (inIndex, prevOutScript, value, hashType) {
-  typeforce(types.tuple(types.UInt32, types.Buffer, types.Satoshi, types.UInt32), arguments)
-
-  var tbuffer, toffset
-  function writeSlice (slice) { toffset += slice.copy(tbuffer, toffset) }
-  function writeUInt32 (i) { toffset = tbuffer.writeUInt32LE(i, toffset) }
-  function writeUInt64 (i) { toffset = bufferutils.writeUInt64LE(tbuffer, i, toffset) }
-  function writeVarInt (i) {
-    varuint.encode(i, tbuffer, toffset)
-    toffset += varuint.encode.bytes
-  }
-  function writeVarSlice (slice) { writeVarInt(slice.length); writeSlice(slice) }
-
-  var hashOutputs = ZERO
-  var hashPrevouts = ZERO
-  var hashSequence = ZERO
-
-  if (!(hashType & Transaction.SIGHASH_ANYONECANPAY)) {
-    tbuffer = Buffer.allocUnsafe(36 * this.ins.length)
-    toffset = 0
-
-    this.ins.forEach(function (txIn) {
-      writeSlice(txIn.hash)
-      writeUInt32(txIn.index)
-    })
-
-    hashPrevouts = bcrypto.hash256(tbuffer)
-  }
-
-  if (!(hashType & Transaction.SIGHASH_ANYONECANPAY) &&
-       (hashType & 0x1f) !== Transaction.SIGHASH_SINGLE &&
-       (hashType & 0x1f) !== Transaction.SIGHASH_NONE) {
-    tbuffer = Buffer.allocUnsafe(4 * this.ins.length)
-    toffset = 0
-
-    this.ins.forEach(function (txIn) {
-      writeUInt32(txIn.sequence)
-    })
-
-    hashSequence = bcrypto.hash256(tbuffer)
-  }
-
-  if ((hashType & 0x1f) !== Transaction.SIGHASH_SINGLE &&
-      (hashType & 0x1f) !== Transaction.SIGHASH_NONE) {
-    var txOutsSize = this.outs.reduce(function (sum, output) {
-      return sum + 8 + varSliceSize(output.script)
-    }, 0)
-
-    tbuffer = Buffer.allocUnsafe(txOutsSize)
-    toffset = 0
-
-    this.outs.forEach(function (out) {
-      writeUInt64(out.value)
-      writeVarSlice(out.script)
-    })
-
-    hashOutputs = bcrypto.hash256(tbuffer)
-  } else if ((hashType & 0x1f) === Transaction.SIGHASH_SINGLE && inIndex < this.outs.length) {
-    var output = this.outs[inIndex]
-
-    tbuffer = Buffer.allocUnsafe(8 + varSliceSize(output.script))
-    toffset = 0
-    writeUInt64(output.value)
-    writeVarSlice(output.script)
-
-    hashOutputs = bcrypto.hash256(tbuffer)
-  }
-
-  tbuffer = Buffer.allocUnsafe(156 + varSliceSize(prevOutScript))
-  toffset = 0
-
-  var input = this.ins[inIndex]
-  writeUInt32(this.version)
-  writeSlice(hashPrevouts)
-  writeSlice(hashSequence)
-  writeSlice(input.hash)
-  writeUInt32(input.index)
-  writeVarSlice(prevOutScript)
-  writeUInt64(value)
-  writeUInt32(input.sequence)
-  writeSlice(hashOutputs)
-  writeUInt32(this.locktime)
-  writeUInt32(hashType)
-  return bcrypto.hash256(tbuffer)
-}
-
-Transaction.prototype.getHash = function () {
-  return bcrypto.hash256(this.__toBuffer(undefined, undefined, false))
-}
-
+// used in webwallet on several places
+// and probably connect
+// Can probably be factored out
+// (both trezor and hd-wallet tell txIds)
 Transaction.prototype.getId = function () {
+  var hash = bcrypto.hash256(this.__toBuffer(undefined, undefined, false))
   // transaction hash's are displayed in reverse order
-  return this.getHash().reverse().toString('hex')
+  return hash.reverse().toString('hex')
 }
 
+// used in toHex
 Transaction.prototype.toBuffer = function (buffer, initialOffset) {
   return this.__toBuffer(buffer, initialOffset, true)
 }
 
+// used in toHex
 Transaction.prototype.__toBuffer = function (buffer, initialOffset, __allowWitness) {
   if (!buffer) buffer = Buffer.allocUnsafe(this.__byteLength(__allowWitness))
 
@@ -677,14 +448,9 @@ Transaction.prototype.__toBuffer = function (buffer, initialOffset, __allowWitne
   return buffer
 }
 
+// used in many places
 Transaction.prototype.toHex = function () {
   return this.toBuffer().toString('hex')
-}
-
-Transaction.prototype.setInputScript = function (index, scriptSig) {
-  typeforce(types.tuple(types.Number, types.Buffer), arguments)
-
-  this.ins[index].script = scriptSig
 }
 
 Transaction.prototype.setWitness = function (index, witness) {

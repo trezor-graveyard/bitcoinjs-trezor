@@ -8,12 +8,9 @@ for (var key in templates) {
 module.exports = {
   bufferutils: require('./bufferutils'), // TODO: remove in 4.0.0
 
-  Block: require('./block'),
-  ECPair: require('./ecpair'),
-  ECSignature: require('./ecsignature'),
+  ECPubkey: require('./ecpubkey'),
   HDNode: require('./hdnode'),
   Transaction: require('./transaction'),
-  TransactionBuilder: require('./transaction_builder'),
 
   address: require('./address'),
   crypto: require('./crypto'),
