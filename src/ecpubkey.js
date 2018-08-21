@@ -1,6 +1,6 @@
 // Note - this used to be ECPair in bitcoinjs-lib
 // But since we do never use private keys in JS in trezor,
-// I gutted ECPair and left it to hold just private key
+// I gutted ECPair and left it to hold just the public key
 
 var baddress = require('./address')
 var bcrypto = require('./crypto')
