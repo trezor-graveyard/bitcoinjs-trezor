@@ -10,10 +10,10 @@ const OP_INT_BASE = OPS.OP_RESERVED; // OP_1 - 1
 
 // used in script.compile
 function asMinimalOP(buffer) {
-    if (buffer.length === 0) return OPS.OP_0;
-    if (buffer.length !== 1) return;
-    if (buffer[0] >= 1 && buffer[0] <= 16) return OP_INT_BASE + buffer[0];
-    if (buffer[0] === 0x81) return OPS.OP_1NEGATE;
+  if (buffer.length === 0) return OPS.OP_0;
+  if (buffer.length !== 1) return;
+  if (buffer[0] >= 1 && buffer[0] <= 16) return OP_INT_BASE + buffer[0];
+  if (buffer[0] === 0x81) return OPS.OP_1NEGATE;
 }
 
 // used everywhere, where we convert
@@ -22,53 +22,53 @@ function asMinimalOP(buffer) {
 //
 // It could probably be refactored away, but that would take time
 function compile(chunks) {
-    // TODO: remove me
-    if (Buffer.isBuffer(chunks)) return chunks;
+  // TODO: remove me
+  if (Buffer.isBuffer(chunks)) return chunks;
 
-    typeforce(types.Array, chunks);
+  typeforce(types.Array, chunks);
 
-    const bufferSize = chunks.reduce((accum, chunk) => {
+  const bufferSize = chunks.reduce((accum, chunk) => {
     // data chunk
-        if (Buffer.isBuffer(chunk)) {
-            // adhere to BIP62.3, minimal push policy
-            if (chunk.length === 1 && asMinimalOP(chunk) !== undefined) {
-                return accum + 1;
-            }
-
-            return accum + pushdata.encodingLength(chunk.length) + chunk.length;
-        }
-
-        // opcode
+    if (Buffer.isBuffer(chunk)) {
+      // adhere to BIP62.3, minimal push policy
+      if (chunk.length === 1 && asMinimalOP(chunk) !== undefined) {
         return accum + 1;
-    }, 0.0);
+      }
 
-    const buffer = Buffer.allocUnsafe(bufferSize);
-    let offset = 0;
+      return accum + pushdata.encodingLength(chunk.length) + chunk.length;
+    }
 
-    chunks.forEach((chunk) => {
+    // opcode
+    return accum + 1;
+  }, 0.0);
+
+  const buffer = Buffer.allocUnsafe(bufferSize);
+  let offset = 0;
+
+  chunks.forEach((chunk) => {
     // data chunk
-        if (Buffer.isBuffer(chunk)) {
-            // adhere to BIP62.3, minimal push policy
-            const opcode = asMinimalOP(chunk);
-            if (opcode !== undefined) {
-                buffer.writeUInt8(opcode, offset);
-                offset += 1;
-                return;
-            }
+    if (Buffer.isBuffer(chunk)) {
+      // adhere to BIP62.3, minimal push policy
+      const opcode = asMinimalOP(chunk);
+      if (opcode !== undefined) {
+        buffer.writeUInt8(opcode, offset);
+        offset += 1;
+        return;
+      }
 
-            offset += pushdata.encode(buffer, chunk.length, offset);
-            chunk.copy(buffer, offset);
-            offset += chunk.length;
+      offset += pushdata.encode(buffer, chunk.length, offset);
+      chunk.copy(buffer, offset);
+      offset += chunk.length;
 
-            // opcode
-        } else {
-            buffer.writeUInt8(chunk, offset);
-            offset += 1;
-        }
-    });
+    // opcode
+    } else {
+      buffer.writeUInt8(chunk, offset);
+      offset += 1;
+    }
+  });
 
-    if (offset !== buffer.length) throw new Error('Could not decode chunks');
-    return buffer;
+  if (offset !== buffer.length) throw new Error('Could not decode chunks');
+  return buffer;
 }
 
 // used everywhere, where we convert
@@ -77,88 +77,88 @@ function compile(chunks) {
 //
 // It could probably be refactored away, but that would take time
 function decompile(buffer) {
-    // TODO: remove me
-    if (types.Array(buffer)) return buffer;
+  // TODO: remove me
+  if (types.Array(buffer)) return buffer;
 
-    typeforce(types.Buffer, buffer);
+  typeforce(types.Buffer, buffer);
 
-    const chunks = [];
-    let i = 0;
+  const chunks = [];
+  let i = 0;
 
-    while (i < buffer.length) {
-        const opcode = buffer[i];
+  while (i < buffer.length) {
+    const opcode = buffer[i];
 
-        // data chunk
-        if ((opcode > OPS.OP_0) && (opcode <= OPS.OP_PUSHDATA4)) {
-            const d = pushdata.decode(buffer, i);
+    // data chunk
+    if ((opcode > OPS.OP_0) && (opcode <= OPS.OP_PUSHDATA4)) {
+      const d = pushdata.decode(buffer, i);
 
-            // did reading a pushDataInt fail? empty script
-            if (d === null) return [];
-            i += d.size;
+      // did reading a pushDataInt fail? empty script
+      if (d === null) return [];
+      i += d.size;
 
-            // attempt to read too much data? empty script
-            if (i + d.number > buffer.length) return [];
+      // attempt to read too much data? empty script
+      if (i + d.number > buffer.length) return [];
 
-            const data = buffer.slice(i, i + d.number);
-            i += d.number;
+      const data = buffer.slice(i, i + d.number);
+      i += d.number;
 
-            // decompile minimally
-            const op = asMinimalOP(data);
-            if (op !== undefined) {
-                chunks.push(op);
-            } else {
-                chunks.push(data);
-            }
+      // decompile minimally
+      const op = asMinimalOP(data);
+      if (op !== undefined) {
+        chunks.push(op);
+      } else {
+        chunks.push(data);
+      }
 
-            // opcode
-        } else {
-            chunks.push(opcode);
+    // opcode
+    } else {
+      chunks.push(opcode);
 
-            i += 1;
-        }
+      i += 1;
     }
+  }
 
-    return chunks;
+  return chunks;
 }
 
 // ASM is the string representation of chunk format
 // used in tests, too muc work to remove it now
 function toASM(chunks) {
-    if (Buffer.isBuffer(chunks)) {
-        chunks = decompile(chunks);
+  if (Buffer.isBuffer(chunks)) {
+    chunks = decompile(chunks);
+  }
+
+  return chunks.map((chunk) => {
+    // data?
+    if (Buffer.isBuffer(chunk)) {
+      const op = asMinimalOP(chunk);
+      if (op === undefined) return chunk.toString('hex');
+      chunk = op;
     }
 
-    return chunks.map((chunk) => {
-    // data?
-        if (Buffer.isBuffer(chunk)) {
-            const op = asMinimalOP(chunk);
-            if (op === undefined) return chunk.toString('hex');
-            chunk = op;
-        }
-
-        // opcode!
-        return REVERSE_OPS[chunk];
-    }).join(' ');
+    // opcode!
+    return REVERSE_OPS[chunk];
+  }).join(' ');
 }
 
 // ASM is the string representation of chunk format
 // used in tests, too muc work to remove it now
 function fromASM(asm) {
-    typeforce(types.String, asm);
+  typeforce(types.String, asm);
 
-    return compile(asm.split(' ').map((chunkStr) => {
+  return compile(asm.split(' ').map((chunkStr) => {
     // opcode?
-        if (OPS[chunkStr] !== undefined) return OPS[chunkStr];
-        typeforce(types.Hex, chunkStr);
+    if (OPS[chunkStr] !== undefined) return OPS[chunkStr];
+    typeforce(types.Hex, chunkStr);
 
-        // data!
-        return Buffer.from(chunkStr, 'hex');
-    }));
+    // data!
+    return Buffer.from(chunkStr, 'hex');
+  }));
 }
 
 module.exports = {
-    compile,
-    decompile,
-    fromASM,
-    toASM,
+  compile,
+  decompile,
+  fromASM,
+  toASM,
 };

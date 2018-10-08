@@ -10,32 +10,32 @@ const types = require('./types');
 const NETWORKS = require('./networks');
 
 function ECPubkey(Q, options) {
-    if (options) {
-        typeforce({
-            compressed: types.maybe(types.Boolean),
-            network: types.maybe(types.Network),
-        }, options);
-    }
+  if (options) {
+    typeforce({
+      compressed: types.maybe(types.Boolean),
+      network: types.maybe(types.Network),
+    }, options);
+  }
 
-    options = options || {};
-    typeforce(types.ECPoint, Q);
+  options = options || {};
+  typeforce(types.ECPoint, Q);
 
-    this.Q = Q;
+  this.Q = Q;
 
-    this.compressed = options.compressed === undefined ? true : options.compressed;
-    this.network = options.network || NETWORKS.bitcoin;
+  this.compressed = options.compressed === undefined ? true : options.compressed;
+  this.network = options.network || NETWORKS.bitcoin;
 }
 
 // used in HDNode.getAddress
 // that is used in hd-wallet when we dont have emscripten
 ECPubkey.prototype.getAddress = function () {
-    return baddress.toBase58Check(bcrypto.hash160(this.getPublicKeyBuffer()), this.network.pubKeyHash);
+  return baddress.toBase58Check(bcrypto.hash160(this.getPublicKeyBuffer()), this.network.pubKeyHash);
 };
 
 // used in HDNode toBase58
 // that is used in hd-wallet when we dont have emscripten
 ECPubkey.prototype.getPublicKeyBuffer = function () {
-    return this.Q.getEncoded(this.compressed);
+  return this.Q.getEncoded(this.compressed);
 };
 
 module.exports = ECPubkey;

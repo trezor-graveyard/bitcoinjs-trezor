@@ -6,7 +6,6 @@
         "jest": true
     },
     "rules": {
-        "indent": [2, 4, { "SwitchCase": 1 }],
         "new-cap": 0,
         "max-len": 0,
         "eol-last": 0,
