@@ -78,27 +78,16 @@
     },
     {
       "dec": 9007199254740991,
-      "hex64": "ffffffffffff1f00",
-      "hexVI": "ffffffffffffff1f00"
+      "hex64": "0000000000002000",
+      "hexVI": "ff0000000000000020"
+    },
+    {
+      "dec": 9007199254740992,
+      "hex64": "0100000000002000",
+      "hexVI": "ff0100000000000020"
     }
   ],
   "invalid": {
-    "readUInt64LE": [
-      {
-        "description": "n === 2^53",
-        "exception": "RangeError: value out of range",
-        "hex64": "0000000000002000",
-        "hexVI": "ff0000000000000020",
-        "dec": 9007199254740992
-      },
-      {
-        "description": "n > 2^53",
-        "exception": "RangeError: value out of range",
-        "hex64": "0100000000002000",
-        "hexVI": "ff0100000000000020",
-        "dec": 9007199254740993
-      }
-    ],
     "readPushDataInt": [
       {
         "description": "OP_PUSHDATA1, no size",
