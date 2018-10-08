@@ -18,7 +18,7 @@
     "coverage-html": "nyc report --reporter=html",
     "coverage": "nyc --check-coverage --branches 90 --functions 90 mocha",
     "standard": "standard",
-    "lint": "npx eslint ./src",
+    "lint": "npx eslint ./src --fix",
     "test": "npm run standard && npm run coverage",
     "unit": "mocha"
   },
