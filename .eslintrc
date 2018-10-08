@@ -1,0 +1,22 @@
+{
+    "extends": [
+        "airbnb-base"
+    ],
+    "env": {
+        "jest": true
+    },
+    "rules": {
+        "func-names": 0,
+        "new-cap": 0,
+        "max-len": 0,
+        "eol-last": 0,
+        "spaced-comment": 0
+    },
+    "parserOptions": {
+        "ecmaVersion": 7,
+        "sourceType": "module",
+        "ecmaFeatures": {
+            "experimentalObjectRestSpread": true
+        }
+    }
+}

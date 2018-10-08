@@ -1,10 +1,10 @@
-var nullData = require('./nulldata')
-var pubKeyHash = require('./pubkeyhash')
-var scriptHash = require('./scripthash')
-var witnessPubKeyHash = require('./witnesspubkeyhash')
-var witnessScriptHash = require('./witnessscripthash')
+const nullData = require('./nulldata');
+const pubKeyHash = require('./pubkeyhash');
+const scriptHash = require('./scripthash');
+const witnessPubKeyHash = require('./witnesspubkeyhash');
+const witnessScriptHash = require('./witnessscripthash');
 
-var types = {
+const types = {
   MULTISIG: 'multisig',
   NONSTANDARD: 'nonstandard',
   NULLDATA: 'nulldata',
@@ -13,14 +13,14 @@ var types = {
   P2SH: 'scripthash',
   P2WPKH: 'witnesspubkeyhash',
   P2WSH: 'witnessscripthash',
-  WITNESS_COMMITMENT: 'witnesscommitment'
-}
+  WITNESS_COMMITMENT: 'witnesscommitment',
+};
 
 module.exports = {
-  nullData: nullData,
-  pubKeyHash: pubKeyHash,
-  scriptHash: scriptHash,
-  witnessPubKeyHash: witnessPubKeyHash,
-  witnessScriptHash: witnessScriptHash,
-  types: types
-}
+  nullData,
+  pubKeyHash,
+  scriptHash,
+  witnessPubKeyHash,
+  witnessScriptHash,
+  types,
+};
