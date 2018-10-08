@@ -34,7 +34,16 @@ function readUInt64LEasString(buffer, offset) {
 }
 
 function writeUInt64LE(buffer, value, offset) {
-  verifuint(value, 0x001fffffffffffff);
+  buffer.writeInt32LE(value & -1, offset);
+  buffer.writeUInt32LE(Math.floor(value / 0x100000000), offset + 4);
+  return offset + 8;
+}
+
+function writeUInt64LEasString(buffer, value, offset) {
+
+  console.log('buffer', buffer);
+  console.log('value', value);
+  console.log('offset', offset);
 
   buffer.writeInt32LE(value & -1, offset);
   buffer.writeUInt32LE(Math.floor(value / 0x100000000), offset + 4);
@@ -67,5 +76,6 @@ module.exports = {
   varIntSize: varuint.encodingLength,
   writePushDataInt: pushdata.encode,
   writeUInt64LE,
+  writeUInt64LEasString,
   writeVarInt,
 };

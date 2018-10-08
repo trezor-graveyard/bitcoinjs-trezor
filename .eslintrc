@@ -6,6 +6,7 @@
         "jest": true
     },
     "rules": {
+        "func-names": 0,
         "new-cap": 0,
         "max-len": 0,
         "eol-last": 0,
