@@ -9,7 +9,7 @@ function verifuint (value, max) {
   if (value < 0) throw new Error('specified a negative value for writing an unsigned value')
   if (value > max) throw new Error('RangeError: value out of range')
   if (Math.floor(value) !== value) throw new Error('value has a fractional component')
-}
+} 
 
 function readUInt64LE (buffer, offset) {
   var a = buffer.readUInt32LE(offset)
