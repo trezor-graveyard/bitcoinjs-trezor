@@ -1,5 +1,6 @@
 const pushdata = require('pushdata-bitcoin');
 const varuint = require('varuint-bitcoin');
+const BigInt = require('bigi');
 
 // All of these are used in transaction parsing
 
@@ -19,6 +20,17 @@ function readUInt64LE(buffer, offset) {
   verifuint(b + a, 0x001fffffffffffff);
 
   return b + a;
+}
+
+function readUInt64LEasString(buffer, offset) {
+  const a = buffer.readUInt32LE(offset).toString();
+  const b = buffer.readUInt32LE(offset + 4).toString();
+  const bigA = BigInt.fromHex(a);
+  let bigB = BigInt.fromHex(b);
+  bigB = bigB.multiply(0x100000000);
+  const result = bigA.add(bigB);
+
+  return result.value.toString();
 }
 
 function writeUInt64LE(buffer, value, offset) {
@@ -49,6 +61,7 @@ module.exports = {
   pushDataSize: pushdata.encodingLength,
   readPushDataInt: pushdata.decode,
   readUInt64LE,
+  readUInt64LEasString,
   readVarInt,
   varIntBuffer: varuint.encode,
   varIntSize: varuint.encodingLength,

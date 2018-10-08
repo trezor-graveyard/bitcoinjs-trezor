@@ -117,9 +117,9 @@ HDNode.prototype.getPublicKeyBuffer = function () {
 };
 
 // maybe used in hd-wallet if we dont have emscripten
-HDNode.prototype.toBase58 = function () {
+HDNode.prototype.toBase58 = () => {
   // Version
-  const network = this.pubkey.network;
+  const { network } = this.pubkey;
   const version = network.bip32.public;
   const buffer = Buffer.allocUnsafe(78);
 

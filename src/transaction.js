@@ -52,7 +52,7 @@ Transaction.ZCASH_G1_PREFIX_MASK = 0x02;
 Transaction.ZCASH_G2_PREFIX_MASK = 0x0a;
 
 // used in any transaction parsings
-Transaction.fromBuffer = function (buffer, zcash, __noStrict) {
+Transaction.fromBuffer = (buffer, zcash, __noStrict) => {
   typeforce('Boolean', zcash);
   let offset = 0;
   function readSlice(n) {
@@ -80,6 +80,12 @@ Transaction.fromBuffer = function (buffer, zcash, __noStrict) {
 
   function readUInt64() {
     const i = bufferutils.readUInt64LE(buffer, offset);
+    offset += 8;
+    return i;
+  }
+
+  function readUInt64asString() {
+    const i = bufferutils.readUInt64LEasString(buffer, offset);
     offset += 8;
     return i;
   }
@@ -161,7 +167,7 @@ Transaction.fromBuffer = function (buffer, zcash, __noStrict) {
   const voutLen = readVarInt();
   for (i = 0; i < voutLen; ++i) {
     tx.outs.push({
-      value: readUInt64(),
+      value: readUInt64asString(),
       script: readVarSlice(),
     });
   }
